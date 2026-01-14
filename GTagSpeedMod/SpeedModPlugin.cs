@@ -190,19 +190,19 @@ namespace GTagSpeedMod
             }
 
             var worldPosition = handAnchor.position + handAnchor.TransformDirection(handMenuOffset);
+            var width = 360f;
+            var height = 420f;
             var screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
             if (screenPosition.z <= 0)
             {
                 return false;
             }
 
-            var width = 360f;
-            var height = 420f;
-            rect = new Rect(
-                screenPosition.x - width * 0.5f,
-                Screen.height - screenPosition.y - height * 0.5f,
-                width,
-                height);
+            var rawX = screenPosition.x - width * 0.5f;
+            var rawY = Screen.height - screenPosition.y - height * 0.5f;
+            var clampedX = Mathf.Clamp(rawX, 0f, Screen.width - width);
+            var clampedY = Mathf.Clamp(rawY, 0f, Screen.height - height);
+            rect = new Rect(clampedX, clampedY, width, height);
             return true;
         }
     }
