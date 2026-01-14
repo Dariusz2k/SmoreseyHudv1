@@ -56,6 +56,8 @@ namespace GTagSpeedMod
         private GUIStyle titleStyle;
         private GUIStyle buttonStyle;
         private GUIStyle toggleButtonStyle;
+        private float nextHandSearchTime;
+        private bool hasLoggedSpeedWarning;
         
         // This runs when your mod loads
         void Awake()
@@ -87,6 +89,12 @@ namespace GTagSpeedMod
                 Logger.LogInfo($"Menu toggled: {showMenu}");
             }
 
+            if (handAnchor == null && Time.time >= nextHandSearchTime)
+            {
+                TryFindHandAnchor();
+                nextHandSearchTime = Time.time + 2f;
+            }
+
             if (options[0].Enabled)
             {
                 ApplySpeedBoost();
@@ -99,6 +107,11 @@ namespace GTagSpeedMod
             if (!showMenu)
             {
                 return;
+            }
+
+            if (titleStyle == null || buttonStyle == null || toggleButtonStyle == null)
+            {
+                BuildMenuStyles();
             }
 
             if (TryGetHandMenuRect(out var handRect))
@@ -173,7 +186,11 @@ namespace GTagSpeedMod
             //     }
             // }
             
-            Logger.LogWarning("Speed boost logic needs to be implemented!");
+            if (!hasLoggedSpeedWarning)
+            {
+                Logger.LogWarning("Speed boost logic needs to be implemented!");
+                hasLoggedSpeedWarning = true;
+            }
         }
 
         private void TryFindHandAnchor()
@@ -203,6 +220,29 @@ namespace GTagSpeedMod
             if (rightHandNode != null)
             {
                 handAnchor = rightHandNode.transform;
+                return;
+            }
+
+            var transforms = GameObject.FindObjectsOfType<Transform>();
+            foreach (var transform in transforms)
+            {
+                if (transform == null)
+                {
+                    continue;
+                }
+
+                var name = transform.name;
+                if (string.IsNullOrEmpty(name))
+                {
+                    continue;
+                }
+
+                if (name.IndexOf("right", StringComparison.OrdinalIgnoreCase) >= 0
+                    && name.IndexOf("hand", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    handAnchor = transform;
+                    return;
+                }
             }
         }
 
