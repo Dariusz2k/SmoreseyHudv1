@@ -51,6 +51,7 @@ namespace GTagSpeedMod
         private bool showMenu = false;
         private Transform handAnchor;
         private Vector3 handMenuOffset = new Vector3(0.05f, 0.05f, 0.15f);
+        private Camera cachedCamera;
         
         // This runs when your mod loads
         void Awake()
@@ -69,7 +70,13 @@ namespace GTagSpeedMod
                 || Input.GetKeyDown(KeyCode.JoystickButton3)
                 || Input.GetKeyDown(KeyCode.JoystickButton1)
                 || Input.GetKeyDown(KeyCode.JoystickButton2)
-                || Input.GetKeyDown(KeyCode.JoystickButton0))
+                || Input.GetKeyDown(KeyCode.JoystickButton0)
+                || Input.GetKeyDown(KeyCode.JoystickButton4)
+                || Input.GetKeyDown(KeyCode.JoystickButton5)
+                || Input.GetKeyDown(KeyCode.JoystickButton6)
+                || Input.GetKeyDown(KeyCode.JoystickButton7)
+                || Input.GetKeyDown(KeyCode.JoystickButton8)
+                || Input.GetKeyDown(KeyCode.JoystickButton9))
             {
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
@@ -173,6 +180,20 @@ namespace GTagSpeedMod
             if (rightHandAnchor != null)
             {
                 handAnchor = rightHandAnchor.transform;
+                return;
+            }
+
+            var rightHandTransform = GameObject.Find("RightHand");
+            if (rightHandTransform != null)
+            {
+                handAnchor = rightHandTransform.transform;
+                return;
+            }
+
+            var rightHandNode = GameObject.Find("PlayerRightHand");
+            if (rightHandNode != null)
+            {
+                handAnchor = rightHandNode.transform;
             }
         }
 
@@ -184,7 +205,8 @@ namespace GTagSpeedMod
                 TryFindHandAnchor();
             }
 
-            if (handAnchor == null || Camera.main == null)
+            var camera = ResolveCamera();
+            if (handAnchor == null || camera == null)
             {
                 return false;
             }
@@ -192,7 +214,7 @@ namespace GTagSpeedMod
             var worldPosition = handAnchor.position + handAnchor.TransformDirection(handMenuOffset);
             var width = 360f;
             var height = 420f;
-            var screenPosition = Camera.main.WorldToScreenPoint(worldPosition);
+            var screenPosition = camera.WorldToScreenPoint(worldPosition);
             if (screenPosition.z <= 0)
             {
                 return false;
@@ -204,6 +226,37 @@ namespace GTagSpeedMod
             var clampedY = Mathf.Clamp(rawY, 0f, Screen.height - height);
             rect = new Rect(clampedX, clampedY, width, height);
             return true;
+        }
+
+        private Camera ResolveCamera()
+        {
+            if (cachedCamera != null)
+            {
+                return cachedCamera;
+            }
+
+            if (Camera.main != null)
+            {
+                cachedCamera = Camera.main;
+                return cachedCamera;
+            }
+
+            var mainCameraObject = GameObject.Find("Main Camera");
+            if (mainCameraObject != null)
+            {
+                cachedCamera = mainCameraObject.GetComponent<Camera>();
+                if (cachedCamera != null)
+                {
+                    return cachedCamera;
+                }
+            }
+
+            if (Camera.allCamerasCount > 0)
+            {
+                cachedCamera = Camera.allCameras[0];
+            }
+
+            return cachedCamera;
         }
     }
 }
