@@ -1,8 +1,6 @@
 using BepInEx;
 using UnityEngine;
 using System;
-using UnityEngine.UI;
-using GorillaLocomotion;
 
 namespace GTagSpeedMod
 {
@@ -52,7 +50,7 @@ namespace GTagSpeedMod
         private Rect menuRect = new Rect(20, 20, 360, 420);
         private bool showMenu = false;
         private GameObject handMenuRoot;
-        private Text handMenuText;
+        private TextMesh handMenuText;
         private Transform handAnchor;
         
         // This runs when your mod loads
@@ -158,16 +156,17 @@ namespace GTagSpeedMod
 
         private void TryFindHandAnchor()
         {
-            if (Player.Instance != null && Player.Instance.rightHandTransform != null)
-            {
-                handAnchor = Player.Instance.rightHandTransform;
-                return;
-            }
-
             var rightHand = GameObject.Find("RightHand Controller");
             if (rightHand != null)
             {
                 handAnchor = rightHand.transform;
+                return;
+            }
+
+            var rightHandAnchor = GameObject.Find("RightHandAnchor");
+            if (rightHandAnchor != null)
+            {
+                handAnchor = rightHandAnchor.transform;
             }
         }
 
@@ -196,33 +195,16 @@ namespace GTagSpeedMod
             handMenuRoot.transform.SetParent(handAnchor, false);
             handMenuRoot.transform.localPosition = new Vector3(0.05f, 0.05f, 0.15f);
             handMenuRoot.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            handMenuRoot.transform.localScale = Vector3.one * 0.0025f;
-
-            var canvas = handMenuRoot.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
-            handMenuRoot.AddComponent<CanvasScaler>();
-            handMenuRoot.AddComponent<GraphicRaycaster>();
-
-            var panel = new GameObject("Panel");
-            panel.transform.SetParent(handMenuRoot.transform, false);
-            var panelImage = panel.AddComponent<Image>();
-            panelImage.color = new Color(0f, 0f, 0f, 0.75f);
-            var panelRect = panel.GetComponent<RectTransform>();
-            panelRect.sizeDelta = new Vector2(600f, 900f);
+            handMenuRoot.transform.localScale = Vector3.one * 0.01f;
 
             var textObject = new GameObject("MenuText");
-            textObject.transform.SetParent(panel.transform, false);
-            handMenuText = textObject.AddComponent<Text>();
-            handMenuText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            handMenuText.fontSize = 36;
+            textObject.transform.SetParent(handMenuRoot.transform, false);
+            textObject.transform.localPosition = Vector3.zero;
+            handMenuText = textObject.AddComponent<TextMesh>();
+            handMenuText.fontSize = 48;
             handMenuText.color = Color.white;
-            handMenuText.alignment = TextAnchor.UpperLeft;
-            var textRect = handMenuText.GetComponent<RectTransform>();
-            textRect.anchorMin = new Vector2(0f, 1f);
-            textRect.anchorMax = new Vector2(1f, 1f);
-            textRect.pivot = new Vector2(0.5f, 1f);
-            textRect.sizeDelta = new Vector2(-40f, -40f);
-            textRect.anchoredPosition = new Vector2(0f, -20f);
+            handMenuText.alignment = TextAlignment.Left;
+            handMenuText.anchor = TextAnchor.UpperLeft;
         }
 
         private void UpdateHandMenuText()
