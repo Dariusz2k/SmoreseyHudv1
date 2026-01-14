@@ -14,7 +14,7 @@ $modName = "GTagSpeedMod.dll"
 
 # Create the main form with STYLE
 $form = New-Object System.Windows.Forms.Form
-$form.Text = '🎮 GTag Mod Manager ULTIMATE 🎮'
+$form.Text = '*** GTag Mod Manager ULTIMATE ***'
 $form.Size = New-Object System.Drawing.Size(750,700)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
@@ -34,7 +34,7 @@ $form.Controls.Add($bannerPanel)
 $titleLabel = New-Object System.Windows.Forms.Label
 $titleLabel.Location = New-Object System.Drawing.Point(10,15)
 $titleLabel.Size = New-Object System.Drawing.Size(720,40)
-$titleLabel.Text = '🚀 GTAG MOD MANAGER ULTIMATE 🚀'
+$titleLabel.Text = '*** GTAG MOD MANAGER ULTIMATE ***'
 $titleLabel.Font = New-Object System.Drawing.Font("Impact",24,[System.Drawing.FontStyle]::Bold)
 $titleLabel.ForeColor = [System.Drawing.Color]::White
 $titleLabel.TextAlign = 'MiddleCenter'
@@ -44,7 +44,7 @@ $bannerPanel.Controls.Add($titleLabel)
 $subtitleLabel = New-Object System.Windows.Forms.Label
 $subtitleLabel.Location = New-Object System.Drawing.Point(10,58)
 $subtitleLabel.Size = New-Object System.Drawing.Size(720,30)
-$subtitleLabel.Text = '⚡ Setup • Build • Deploy • Dominate ⚡'
+$subtitleLabel.Text = '>> Setup - Build - Deploy - Dominate <<'
 $subtitleLabel.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $subtitleLabel.ForeColor = [System.Drawing.Color]::FromArgb(255,215,0)  # Gold
 $subtitleLabel.TextAlign = 'MiddleCenter'
@@ -63,7 +63,7 @@ $form.Controls.Add($step1Panel)
 $step1Label = New-Object System.Windows.Forms.Label
 $step1Label.Location = New-Object System.Drawing.Point(10,5)
 $step1Label.Size = New-Object System.Drawing.Size(690,30)
-$step1Label.Text = '📁 STEP 1: Locate Gorilla Tag'
+$step1Label.Text = '[STEP 1] Locate Gorilla Tag'
 $step1Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step1Label.ForeColor = [System.Drawing.Color]::FromArgb(0,255,255)  # Cyan
 $step1Panel.Controls.Add($step1Label)
@@ -80,7 +80,7 @@ $step1Panel.Controls.Add($gtagTextBox)
 $browseGtagButton = New-Object System.Windows.Forms.Button
 $browseGtagButton.Location = New-Object System.Drawing.Point(610,38)
 $browseGtagButton.Size = New-Object System.Drawing.Size(90,28)
-$browseGtagButton.Text = '🔍 Browse'
+$browseGtagButton.Text = ' Browse'
 $browseGtagButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $browseGtagButton.BackColor = [System.Drawing.Color]::FromArgb(70,130,180)
 $browseGtagButton.ForeColor = [System.Drawing.Color]::White
@@ -101,7 +101,7 @@ $step1Panel.Controls.Add($browseGtagButton)
 $bepinexStatusLabel = New-Object System.Windows.Forms.Label
 $bepinexStatusLabel.Location = New-Object System.Drawing.Point(10,70)
 $bepinexStatusLabel.Size = New-Object System.Drawing.Size(690,22)
-$bepinexStatusLabel.Text = '⚪ BepInEx: Not Checked'
+$bepinexStatusLabel.Text = '[ ] BepInEx: Not Checked'
 $bepinexStatusLabel.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
 $bepinexStatusLabel.ForeColor = [System.Drawing.Color]::Gray
 $step1Panel.Controls.Add($bepinexStatusLabel)
@@ -119,7 +119,7 @@ $form.Controls.Add($step2Panel)
 $step2Label = New-Object System.Windows.Forms.Label
 $step2Label.Location = New-Object System.Drawing.Point(10,5)
 $step2Label.Size = New-Object System.Drawing.Size(690,30)
-$step2Label.Text = '⚙️ STEP 2: BepInEx Setup'
+$step2Label.Text = '[STEP 2] BepInEx Setup'
 $step2Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step2Label.ForeColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Orange
 $step2Panel.Controls.Add($step2Label)
@@ -135,7 +135,7 @@ $step2Panel.Controls.Add($bepinexInfoLabel)
 $downloadBepInExButton = New-Object System.Windows.Forms.Button
 $downloadBepInExButton.Location = New-Object System.Drawing.Point(10,65)
 $downloadBepInExButton.Size = New-Object System.Drawing.Size(160,35)
-$downloadBepInExButton.Text = '⬇️ Download BepInEx'
+$downloadBepInExButton.Text = 'Download BepInEx'
 $downloadBepInExButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $downloadBepInExButton.BackColor = [System.Drawing.Color]::FromArgb(34,139,34)  # Forest Green
 $downloadBepInExButton.ForeColor = [System.Drawing.Color]::White
@@ -147,7 +147,7 @@ $step2Panel.Controls.Add($downloadBepInExButton)
 $checkBepInExButton = New-Object System.Windows.Forms.Button
 $checkBepInExButton.Location = New-Object System.Drawing.Point(180,65)
 $checkBepInExButton.Size = New-Object System.Drawing.Size(130,35)
-$checkBepInExButton.Text = '🔄 Check Status'
+$checkBepInExButton.Text = 'Check Status'
 $checkBepInExButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $checkBepInExButton.BackColor = [System.Drawing.Color]::FromArgb(70,130,180)
 $checkBepInExButton.ForeColor = [System.Drawing.Color]::White
@@ -159,7 +159,7 @@ $step2Panel.Controls.Add($checkBepInExButton)
 $copyDllsButton = New-Object System.Windows.Forms.Button
 $copyDllsButton.Location = New-Object System.Drawing.Point(320,65)
 $copyDllsButton.Size = New-Object System.Drawing.Size(180,35)
-$copyDllsButton.Text = '📦 Copy Dev Libraries'
+$copyDllsButton.Text = 'Copy Dev Libraries'
 $copyDllsButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $copyDllsButton.BackColor = [System.Drawing.Color]::FromArgb(255,140,0)  # Dark Orange
 $copyDllsButton.ForeColor = [System.Drawing.Color]::White
@@ -171,7 +171,7 @@ $step2Panel.Controls.Add($copyDllsButton)
 $helpButton = New-Object System.Windows.Forms.Button
 $helpButton.Location = New-Object System.Drawing.Point(510,65)
 $helpButton.Size = New-Object System.Drawing.Size(100,35)
-$helpButton.Text = '❓ Help'
+$helpButton.Text = 'Help'
 $helpButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $helpButton.BackColor = [System.Drawing.Color]::FromArgb(128,0,128)  # Purple
 $helpButton.ForeColor = [System.Drawing.Color]::White
@@ -193,7 +193,7 @@ $form.Controls.Add($step3Panel)
 $step3Label = New-Object System.Windows.Forms.Label
 $step3Label.Location = New-Object System.Drawing.Point(10,5)
 $step3Label.Size = New-Object System.Drawing.Size(690,30)
-$step3Label.Text = '🎯 STEP 3: Mod Deployment'
+$step3Label.Text = '[STEP 3] Mod Deployment'
 $step3Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step3Label.ForeColor = [System.Drawing.Color]::FromArgb(50,205,50)  # Lime Green
 $step3Panel.Controls.Add($step3Label)
@@ -202,7 +202,7 @@ $step3Panel.Controls.Add($step3Label)
 $modStatusLabel = New-Object System.Windows.Forms.Label
 $modStatusLabel.Location = New-Object System.Drawing.Point(10,40)
 $modStatusLabel.Size = New-Object System.Drawing.Size(690,30)
-$modStatusLabel.Text = '⚪ Mod Status: Not Built Yet'
+$modStatusLabel.Text = '[ ] Mod Status: Not Built Yet'
 $modStatusLabel.Font = New-Object System.Drawing.Font("Segoe UI",11,[System.Drawing.FontStyle]::Bold)
 $modStatusLabel.ForeColor = [System.Drawing.Color]::Gray
 $step3Panel.Controls.Add($modStatusLabel)
@@ -219,7 +219,7 @@ $step3Panel.Controls.Add($modLocationLabel)
 $loadModButton = New-Object System.Windows.Forms.Button
 $loadModButton.Location = New-Object System.Drawing.Point(10,90)
 $loadModButton.Size = New-Object System.Drawing.Size(220,35)
-$loadModButton.Text = '🚀 INSTALL MOD TO GAME'
+$loadModButton.Text = '>> INSTALL MOD TO GAME'
 $loadModButton.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
 $loadModButton.BackColor = [System.Drawing.Color]::FromArgb(220,20,60)  # Crimson
 $loadModButton.ForeColor = [System.Drawing.Color]::White
@@ -232,7 +232,7 @@ $step3Panel.Controls.Add($loadModButton)
 $unloadModButton = New-Object System.Windows.Forms.Button
 $unloadModButton.Location = New-Object System.Drawing.Point(240,90)
 $unloadModButton.Size = New-Object System.Drawing.Size(220,35)
-$unloadModButton.Text = '🗑️ UNINSTALL MOD'
+$unloadModButton.Text = '[X] UNINSTALL MOD'
 $unloadModButton.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
 $unloadModButton.BackColor = [System.Drawing.Color]::FromArgb(178,34,34)  # Firebrick
 $unloadModButton.ForeColor = [System.Drawing.Color]::White
@@ -245,7 +245,7 @@ $step3Panel.Controls.Add($unloadModButton)
 $openPluginsFolderButton = New-Object System.Windows.Forms.Button
 $openPluginsFolderButton.Location = New-Object System.Drawing.Point(470,90)
 $openPluginsFolderButton.Size = New-Object System.Drawing.Size(230,35)
-$openPluginsFolderButton.Text = '📂 Open Plugins Folder'
+$openPluginsFolderButton.Text = 'Open Plugins Folder'
 $openPluginsFolderButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $openPluginsFolderButton.BackColor = [System.Drawing.Color]::FromArgb(70,130,180)
 $openPluginsFolderButton.ForeColor = [System.Drawing.Color]::White
@@ -260,7 +260,7 @@ $step3Panel.Controls.Add($openPluginsFolderButton)
 $statusLogLabel = New-Object System.Windows.Forms.Label
 $statusLogLabel.Location = New-Object System.Drawing.Point(10,480)
 $statusLogLabel.Size = New-Object System.Drawing.Size(720,25)
-$statusLogLabel.Text = '📋 Activity Log'
+$statusLogLabel.Text = '=== Activity Log ==='
 $statusLogLabel.Font = New-Object System.Drawing.Font("Segoe UI",11,[System.Drawing.FontStyle]::Bold)
 $statusLogLabel.ForeColor = [System.Drawing.Color]::White
 $form.Controls.Add($statusLogLabel)
@@ -315,7 +315,7 @@ function CheckModStatus {
 
     # Check if mod is installed in game
     if (-not (Test-Path $gtagPath)) {
-        $modStatusLabel.Text = "⚪ Mod Status: Invalid Game Path"
+        $modStatusLabel.Text = "[X] Mod Status: Invalid Game Path"
         $modStatusLabel.ForeColor = [System.Drawing.Color]::Gray
         $unloadModButton.Enabled = $false
         return
@@ -326,7 +326,7 @@ function CheckModStatus {
 
     if (Test-Path $installedModPath) {
         $installedInfo = Get-Item $installedModPath
-        $modStatusLabel.Text = "✅ Mod Status: INSTALLED & ACTIVE"
+        $modStatusLabel.Text = "[OK] Mod Status: INSTALLED AND ACTIVE"
         $modStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(50,255,50)
         $modLocationLabel.Text = "Installed: $($installedInfo.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss'))"
         $unloadModButton.Enabled = $true
@@ -336,16 +336,16 @@ function CheckModStatus {
             $builtHash = (Get-FileHash $modDllPath).Hash
             $installedHash = (Get-FileHash $installedModPath).Hash
             if ($builtHash -ne $installedHash) {
-                $modStatusLabel.Text = "⚠️ Mod Status: INSTALLED (Update Available)"
+                $modStatusLabel.Text = "[!] Mod Status: INSTALLED (Update Available)"
                 $modStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(255,215,0)
             }
         }
     } else {
         if ($modExists) {
-            $modStatusLabel.Text = "💤 Mod Status: Built But Not Installed"
+            $modStatusLabel.Text = "[~] Mod Status: Built But Not Installed"
             $modStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(255,165,0)
         } else {
-            $modStatusLabel.Text = "⚪ Mod Status: Not Built Yet"
+            $modStatusLabel.Text = "[ ] Mod Status: Not Built Yet"
             $modStatusLabel.ForeColor = [System.Drawing.Color]::Gray
         }
         $unloadModButton.Enabled = $false
@@ -356,7 +356,7 @@ function CheckBepInExStatus {
     $gtagPath = $gtagTextBox.Text
 
     if (-not (Test-Path $gtagPath)) {
-        $bepinexStatusLabel.Text = "❌ BepInEx: Invalid Game Path"
+        $bepinexStatusLabel.Text = "[X] BepInEx: Invalid Game Path"
         $bepinexStatusLabel.ForeColor = [System.Drawing.Color]::Red
         return $false
     }
@@ -365,15 +365,15 @@ function CheckBepInExStatus {
     $winHttpPath = Join-Path $gtagPath "winhttp.dll"
 
     if ((Test-Path $bepinexPath) -and (Test-Path $winHttpPath)) {
-        $bepinexStatusLabel.Text = "✅ BepInEx: Installed & Ready"
+        $bepinexStatusLabel.Text = "[OK] BepInEx: Installed and Ready"
         $bepinexStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(50,255,50)
         return $true
     } elseif (Test-Path $bepinexPath) {
-        $bepinexStatusLabel.Text = "⚠️ BepInEx: Partially Installed"
+        $bepinexStatusLabel.Text = "[!] BepInEx: Partially Installed"
         $bepinexStatusLabel.ForeColor = [System.Drawing.Color]::Orange
         return $false
     } else {
-        $bepinexStatusLabel.Text = "❌ BepInEx: Not Installed"
+        $bepinexStatusLabel.Text = "[X] BepInEx: Not Installed"
         $bepinexStatusLabel.ForeColor = [System.Drawing.Color]::Red
         return $false
     }
@@ -422,23 +422,23 @@ function InstallMod {
 
     try {
         WriteStatus "================================================"
-        WriteStatus "🚀 INSTALLING MOD TO GAME..."
+        WriteStatus ">> INSTALLING MOD TO GAME..."
         WriteStatus "================================================"
 
         $progressBar.Value = 30
         Copy-Item $modDllPath -Destination $installedModPath -Force
 
         $progressBar.Value = 100
-        WriteStatus "✅ SUCCESS! Mod installed to game!"
+        WriteStatus "[OK] SUCCESS! Mod installed to game!"
         WriteStatus "Location: $installedModPath"
         WriteStatus "================================================"
         WriteStatus ""
-        WriteStatus "🎮 READY TO PLAY! Launch Gorilla Tag and press F1 in-game"
+        WriteStatus ">> READY TO PLAY! Launch Gorilla Tag and press F1 in-game"
 
         CheckModStatus
 
         [System.Windows.Forms.MessageBox]::Show(
-            "🚀 MOD INSTALLED SUCCESSFULLY! 🚀`n`nYour mod is now active in Gorilla Tag!`n`nPress F1 in-game to open the mod menu.",
+            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress F1 in-game to open the mod menu.",
             "Installation Complete",
             'OK',
             'Information'
@@ -485,14 +485,14 @@ function UninstallMod {
 
     try {
         WriteStatus "================================================"
-        WriteStatus "🗑️ UNINSTALLING MOD..."
+        WriteStatus "[X] UNINSTALLING MOD..."
         WriteStatus "================================================"
 
         $progressBar.Value = 50
         Remove-Item $installedModPath -Force
 
         $progressBar.Value = 100
-        WriteStatus "✅ Mod successfully uninstalled from game"
+        WriteStatus "[OK] Mod successfully uninstalled from game"
         WriteStatus "================================================"
 
         CheckModStatus
@@ -551,48 +551,48 @@ redirectOutputLog=false
 
     try {
         Set-Content -Path $configPath -Value $doorstopConfig -Force
-        WriteStatus "✅ Created doorstop_config.ini"
+        WriteStatus "[OK] Created doorstop_config.ini"
         return $true
     }
     catch {
-        WriteStatus "⚠️ Warning: Could not create doorstop_config.ini"
+        WriteStatus "[!] Warning: Could not create doorstop_config.ini"
         return $false
     }
 }
 
 function ShowManualInstructions {
     $helpText = @"
-🎮 MANUAL BEPINEX INSTALLATION GUIDE 🎮
+=== MANUAL BEPINEX INSTALLATION GUIDE ===
 
 If automatic download doesn't work:
 
-1️⃣ Visit: https://builds.bepinex.dev/projects/bepinex_be
+[1] Visit: https://builds.bepinex.dev/projects/bepinex_be
 
-2️⃣ Download LATEST 'BepInEx-IL2CPP-x64' build
-   (Look for: BepInEx-IL2CPP-x64-6.0.0-be.XXX.zip)
+[2] Download LATEST 'BepInEx-IL2CPP-x64' build
+    (Look for: BepInEx-IL2CPP-x64-6.0.0-be.XXX.zip)
 
-3️⃣ Extract the ZIP file to a temporary folder
+[3] Extract the ZIP file to a temporary folder
 
-4️⃣ Copy EVERYTHING from inside the extracted folder
-   into your Gorilla Tag folder (where GorillaTag.exe is)
+[4] Copy EVERYTHING from inside the extracted folder
+    into your Gorilla Tag folder (where GorillaTag.exe is)
 
-5️⃣ Run Gorilla Tag once
-   • Takes longer to start (NORMAL)
-   • Console window appears (NORMAL)
-   • BepInEx creates folders automatically
+[5] Run Gorilla Tag once
+    - Takes longer to start (NORMAL)
+    - Console window appears (NORMAL)
+    - BepInEx creates folders automatically
 
-6️⃣ Come back and click 'Copy Dev Libraries'
+[6] Come back and click 'Copy Dev Libraries'
 
-⚠️ TROUBLESHOOTING:
-• Game won't start → Disable antivirus
-• Console appears → This is NORMAL with BepInEx
-• Crashes on launch → Check BepInEx\LogOutput.log
-• Still issues → Run as Administrator
+=== TROUBLESHOOTING ===
+- Game won't start: Disable antivirus
+- Console appears: This is NORMAL with BepInEx
+- Crashes on launch: Check BepInEx\LogOutput.log
+- Still issues: Run as Administrator
 
-💡 TIP: Add Gorilla Tag folder to antivirus exceptions!
+TIP: Add Gorilla Tag folder to antivirus exceptions!
 "@
 
-    [System.Windows.Forms.MessageBox]::Show($helpText, "📖 Manual Installation Guide", 'OK', 'Information')
+    [System.Windows.Forms.MessageBox]::Show($helpText, "Manual Installation Guide", 'OK', 'Information')
 }
 
 function DownloadBepInEx {
@@ -628,7 +628,7 @@ function DownloadBepInEx {
     if ($result -ne 'Yes') { return }
 
     WriteStatus "================================================"
-    WriteStatus "⬇️ Starting BepInEx Download..."
+    WriteStatus " Starting BepInEx Download..."
     WriteStatus "================================================"
 
     if (-not (Test-Path $tempPath)) {
@@ -640,20 +640,20 @@ function DownloadBepInEx {
 
     try {
         $progressBar.Value = 10
-        WriteStatus "📥 Downloading BepInEx Bleeding Edge..."
-        WriteStatus "⏳ This may take a minute..."
+        WriteStatus "[>>] Downloading BepInEx Bleeding Edge..."
+        WriteStatus "[...] This may take a minute..."
 
         $webClient = New-Object System.Net.WebClient
         $webClient.DownloadFile($bepinexUrl, $zipPath)
 
         $progressBar.Value = 50
-        WriteStatus "✅ Download complete!"
-        WriteStatus "📦 Extracting files..."
+        WriteStatus "[OK] Download complete!"
+        WriteStatus "[>>] Extracting files..."
 
         [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $gtagPath)
 
         $progressBar.Value = 80
-        WriteStatus "✅ Files extracted!"
+        WriteStatus "[OK] Files extracted!"
 
         CreateDoorstopConfig -gtagPath $gtagPath
 
@@ -661,10 +661,10 @@ function DownloadBepInEx {
 
         $progressBar.Value = 100
         WriteStatus "================================================"
-        WriteStatus "✅ BepInEx Installation Complete!"
+        WriteStatus "[OK] BepInEx Installation Complete!"
         WriteStatus "================================================"
         WriteStatus ""
-        WriteStatus "📋 NEXT STEPS:"
+        WriteStatus "=== NEXT STEPS ==="
         WriteStatus "1. Run Gorilla Tag ONCE (takes longer first time)"
         WriteStatus "2. Console window is NORMAL"
         WriteStatus "3. Click 'Copy Dev Libraries' after game runs"
@@ -672,7 +672,7 @@ function DownloadBepInEx {
         CheckAllStatus
 
         [System.Windows.Forms.MessageBox]::Show(
-            "🎉 BepInEx installed successfully! 🎉`n`nNEXT STEPS:`n1. Run Gorilla Tag once (takes longer to start)`n2. Console window is NORMAL`n3. Come back and click 'Copy Dev Libraries'",
+            "*** BepInEx installed successfully! ***`n`nNEXT STEPS:`n1. Run Gorilla Tag once (takes longer to start)`n2. Console window is NORMAL`n3. Come back and click 'Copy Dev Libraries'",
             "Installation Complete",
             'OK',
             'Information'
@@ -682,7 +682,7 @@ function DownloadBepInEx {
     }
     catch {
         $progressBar.Value = 0
-        WriteStatus "❌ ERROR: $_"
+        WriteStatus "[X] ERROR: $_"
 
         $retryResult = [System.Windows.Forms.MessageBox]::Show(
             "Automatic download failed!`n`nWould you like to see manual installation instructions?",
@@ -726,14 +726,14 @@ function CopyDllFiles {
     }
 
     WriteStatus "================================================"
-    WriteStatus "📦 Copying DLL Files for Development..."
+    WriteStatus "[>>] Copying DLL Files for Development..."
     WriteStatus "================================================"
 
     $progressBar.Value = 0
 
     if (-not (Test-Path $libsPath)) {
         New-Item -ItemType Directory -Path $libsPath -Force | Out-Null
-        WriteStatus "✅ Created libs folder"
+        WriteStatus "[OK] Created libs folder"
     }
 
     # Find BepInEx DLL
@@ -747,7 +747,7 @@ function CopyDllFiles {
     foreach ($path in $possibleBepInExPaths) {
         if (Test-Path $path) {
             $bepinexDllPath = $path
-            WriteStatus "✅ Found BepInEx DLL: $(Split-Path $path -Leaf)"
+            WriteStatus "[OK] Found BepInEx DLL: $(Split-Path $path -Leaf)"
             break
         }
     }
@@ -762,7 +762,7 @@ function CopyDllFiles {
     foreach ($path in $managedPaths) {
         if (Test-Path $path) {
             $actualManagedPath = $path
-            WriteStatus "✅ Found Managed folder"
+            WriteStatus "[OK] Found Managed folder"
             break
         }
     }
@@ -804,7 +804,7 @@ function CopyDllFiles {
     $totalFiles = $filesToCopy.Count
 
     WriteStatus ""
-    WriteStatus "📋 Copying $totalFiles files..."
+    WriteStatus "[>>] Copying $totalFiles files..."
 
     for ($i = 0; $i -lt $filesToCopy.Count; $i++) {
         $file = $filesToCopy[$i]
@@ -813,16 +813,16 @@ function CopyDllFiles {
         if ($file.Source -and (Test-Path $file.Source)) {
             try {
                 Copy-Item $file.Source -Destination (Join-Path $libsPath $file.Dest) -Force
-                WriteStatus "  ✅ $($file.Name)"
+                WriteStatus "   $($file.Name)"
                 $successCount++
             }
             catch {
-                WriteStatus "  ❌ $($file.Name) - $_"
+                WriteStatus "   $($file.Name) - $_"
                 $failCount++
             }
         }
         else {
-            WriteStatus "  ⚠️ $($file.Name) - Not Found"
+            WriteStatus "   $($file.Name) - Not Found"
             $failCount++
         }
     }
@@ -833,20 +833,20 @@ function CopyDllFiles {
     WriteStatus "================================================"
 
     if ($failCount -eq 0) {
-        WriteStatus "✅ SUCCESS! All $successCount files copied!"
+        WriteStatus "[OK] SUCCESS! All $successCount files copied!"
         WriteStatus "================================================"
         WriteStatus ""
-        WriteStatus "🎯 Next: Run build.bat to compile your mod!"
+        WriteStatus ">> Next: Run build.bat to compile your mod!"
 
         [System.Windows.Forms.MessageBox]::Show(
-            "🎉 All DLL files copied successfully! 🎉`n`n$successCount files copied`n`nYou can now run build.bat to compile your mod!",
+            " All DLL files copied successfully! `n`n$successCount files copied`n`nYou can now run build.bat to compile your mod!",
             "Setup Complete",
             'OK',
             'Information'
         )
     }
     else {
-        WriteStatus "⚠️ RESULTS: $successCount succeeded, $failCount failed"
+        WriteStatus "[!] RESULTS: $successCount succeeded, $failCount failed"
         WriteStatus "================================================"
 
         [System.Windows.Forms.MessageBox]::Show(
@@ -864,7 +864,7 @@ function CopyDllFiles {
 # INITIALIZATION
 # ===============================================
 WriteStatus "================================================"
-WriteStatus "🚀 GTag Mod Manager ULTIMATE - Ready!"
+WriteStatus "*** GTag Mod Manager ULTIMATE - Ready! ***"
 WriteStatus "================================================"
 WriteStatus ""
 WriteStatus "Select your Gorilla Tag folder to begin..."
