@@ -63,7 +63,7 @@ $form.Controls.Add($step1Panel)
 $step1Label = New-Object System.Windows.Forms.Label
 $step1Label.Location = New-Object System.Drawing.Point(10,5)
 $step1Label.Size = New-Object System.Drawing.Size(690,30)
-$step1Label.Text = '☐ [STEP 1] Locate Gorilla Tag'
+$step1Label.Text = '[ ] [STEP 1] Locate Gorilla Tag'
 $step1Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step1Label.ForeColor = [System.Drawing.Color]::FromArgb(0,255,255)  # Cyan
 $step1Panel.Controls.Add($step1Label)
@@ -119,7 +119,7 @@ $form.Controls.Add($step2Panel)
 $step2Label = New-Object System.Windows.Forms.Label
 $step2Label.Location = New-Object System.Drawing.Point(10,5)
 $step2Label.Size = New-Object System.Drawing.Size(690,30)
-$step2Label.Text = '☐ [STEP 2] BepInEx Setup'
+$step2Label.Text = '[ ] [STEP 2] BepInEx Setup'
 $step2Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step2Label.ForeColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Orange
 $step2Panel.Controls.Add($step2Label)
@@ -193,7 +193,7 @@ $form.Controls.Add($step3Panel)
 $step3Label = New-Object System.Windows.Forms.Label
 $step3Label.Location = New-Object System.Drawing.Point(10,5)
 $step3Label.Size = New-Object System.Drawing.Size(690,30)
-$step3Label.Text = '☐ [STEP 3] Mod Deployment'
+$step3Label.Text = '[ ] [STEP 3] Mod Deployment'
 $step3Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step3Label.ForeColor = [System.Drawing.Color]::FromArgb(50,205,50)  # Lime Green
 $step3Panel.Controls.Add($step3Label)
@@ -312,9 +312,9 @@ function SetStepStatus {
     )
 
     if ($isComplete) {
-        $label.Text = "✔ $stepText"
+        $label.Text = "[X] $stepText"
     } else {
-        $label.Text = "☐ $stepText"
+        $label.Text = "[ ] $stepText"
     }
 }
 
