@@ -301,7 +301,9 @@ function WriteStatus {
 function GetIsValidGtagPath {
     $gtagPath = $gtagTextBox.Text
     $gtagExePath = Join-Path $gtagPath "GorillaTag.exe"
-    return (Test-Path $gtagPath) -and (Test-Path $gtagExePath)
+    $dataPathA = Join-Path $gtagPath "GorillaTag_Data"
+    $dataPathB = Join-Path $gtagPath "Gorilla Tag_Data"
+    return (Test-Path $gtagPath) -and ((Test-Path $gtagExePath) -or (Test-Path $dataPathA) -or (Test-Path $dataPathB))
 }
 
 function SetStepStatus {
