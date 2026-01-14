@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 
 $LibsDir = ".\libs"
 $BepInExVersion = "5.4.23.2"
-$BepInExUrl = "https://github.com/BepInEx/BepInEx/releases/download/v$BepInExVersion/BepInEx_win_x64_$BepInExVersion.0.zip"
+$BepInExUrl = "https://github.com/BepInEx/BepInEx/releases/download/v$BepInExVersion/BepInEx_win_x64_$BepInExVersion.zip"
 $TempDir = ".\temp_bepinex"
 $TempZip = "$TempDir\bepinex.zip"
 
