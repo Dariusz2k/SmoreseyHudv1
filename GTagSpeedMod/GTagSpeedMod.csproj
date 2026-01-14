@@ -60,10 +60,6 @@
       <HintPath>$(LibsPath)\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>$(LibsPath)\UnityEngine.TextRenderingModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <!-- Add more Unity/Gorilla Tag DLLs here as needed -->
   </ItemGroup>
   <ItemGroup>
