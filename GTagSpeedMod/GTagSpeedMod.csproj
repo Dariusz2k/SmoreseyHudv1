@@ -34,9 +34,17 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <!-- BepInEx Reference -->
+    <!-- BepInEx References -->
     <Reference Include="BepInEx">
       <HintPath>$(LibsPath)\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(LibsPath)\BepInEx.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(LibsPath)\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <!-- Unity References -->
