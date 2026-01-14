@@ -71,15 +71,20 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================
     echo Pull completed successfully!
     echo ========================================
+    echo.
+    echo Reloading build menu with latest changes...
+    timeout /t 2 >nul
+    call "%~f0"
+    exit /b
 ) else (
     echo.
     echo ========================================
     echo Pull failed! Check errors above.
     echo ========================================
+    echo.
+    pause
+    goto MENU
 )
-echo.
-pause
-goto MENU
 
 REM ========================================
 REM OPTION 2: Build/Compile Mod
