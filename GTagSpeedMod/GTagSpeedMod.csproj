@@ -11,6 +11,8 @@
     <AssemblyName>GTagSpeedMod</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <!-- Define path to libs folder relative to solution root -->
+    <LibsPath>$(MSBuildThisFileDirectory)..\libs</LibsPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,16 +36,16 @@
     <Reference Include="System.Core" />
     <!-- BepInEx Reference -->
     <Reference Include="BepInEx">
-      <HintPath>$(MSBuildProjectDirectory)\..\libs\BepInEx.dll</HintPath>
+      <HintPath>$(LibsPath)\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <!-- Unity References -->
     <Reference Include="UnityEngine">
-      <HintPath>$(MSBuildProjectDirectory)\..\libs\UnityEngine.dll</HintPath>
+      <HintPath>$(LibsPath)\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(MSBuildProjectDirectory)\..\libs\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(LibsPath)\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <!-- Add more Unity/Gorilla Tag DLLs here as needed -->

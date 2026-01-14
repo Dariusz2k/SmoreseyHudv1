@@ -43,12 +43,21 @@ echo.
 
 REM Validate libs folder and required DLLs
 echo Checking for required dependencies...
+echo Current directory: %CD%
+echo.
+
 if not exist "libs" (
     echo ERROR: libs folder not found!
     echo Please ensure the libs folder exists with required DLLs
+    echo Expected location: %CD%\libs
     pause
     exit /b 1
 )
+
+echo Found libs folder at: %CD%\libs
+echo Contents:
+dir /b libs\*.dll
+echo.
 
 if not exist "libs\BepInEx.dll" (
     echo ERROR: BepInEx.dll not found in libs folder!
@@ -76,7 +85,9 @@ echo.
 
 REM Build the project
 echo Building project...
-%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal
+echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release
+echo.
+%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal /fl /flp:logfile=build.log;verbosity=diagnostic
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -90,12 +101,17 @@ if %ERRORLEVEL% EQU 0 (
     echo Copy this file to:
     echo [Gorilla Tag Folder]\BepInEx\plugins\
     echo.
+    echo Detailed build log saved to: build.log
+    echo.
 ) else (
     echo.
     echo ========================================
     echo BUILD FAILED!
     echo ========================================
     echo Check the error messages above
+    echo.
+    echo A detailed build log has been saved to: build.log
+    echo This log contains diagnostic information to help troubleshoot the issue
     echo.
 )
 
