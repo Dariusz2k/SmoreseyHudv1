@@ -59,8 +59,8 @@ namespace GTagSpeedMod
         // This runs every frame
         void Update()
         {
-            // Press F1 to toggle the menu
-            if (Input.GetKeyDown(KeyCode.F1))
+            // Press Y or B on VR controllers to toggle the menu
+            if (Input.GetKeyDown(KeyCode.JoystickButton3) || Input.GetKeyDown(KeyCode.JoystickButton1))
             {
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
@@ -108,7 +108,7 @@ namespace GTagSpeedMod
             speedMultiplier = GUILayout.HorizontalSlider(speedMultiplier, 1.0f, 5.0f);
 
             GUILayout.Space(8);
-            GUILayout.Label("Press F1 to toggle menu");
+            GUILayout.Label("Press Y or B to toggle menu");
 
             GUILayout.Space(6);
             if (GUILayout.Button("Close"))
