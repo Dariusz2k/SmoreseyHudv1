@@ -41,6 +41,39 @@ echo Found Visual Studio at: %VS_PATH%
 echo Found MSBuild at: %MSBUILD_PATH%
 echo.
 
+REM Validate libs folder and required DLLs
+echo Checking for required dependencies...
+if not exist "libs" (
+    echo ERROR: libs folder not found!
+    echo Please ensure the libs folder exists with required DLLs
+    pause
+    exit /b 1
+)
+
+if not exist "libs\BepInEx.dll" (
+    echo ERROR: BepInEx.dll not found in libs folder!
+    echo Please ensure BepInEx.dll is in the libs folder
+    pause
+    exit /b 1
+)
+
+if not exist "libs\UnityEngine.dll" (
+    echo ERROR: UnityEngine.dll not found in libs folder!
+    echo Please ensure UnityEngine.dll is in the libs folder
+    pause
+    exit /b 1
+)
+
+if not exist "libs\UnityEngine.CoreModule.dll" (
+    echo ERROR: UnityEngine.CoreModule.dll not found in libs folder!
+    echo Please ensure UnityEngine.CoreModule.dll is in the libs folder
+    pause
+    exit /b 1
+)
+
+echo All required DLLs found.
+echo.
+
 REM Build the project
 echo Building project...
 %MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal
