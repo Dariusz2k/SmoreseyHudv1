@@ -1,0 +1,51 @@
+QUICK REFERENCE - Understanding the Code
+
+=== SpeedModPlugin.cs ===
+
+ATTRIBUTES:
+[BepInPlugin(...)] - Tells BepInEx about your mod (ID, name, version)
+
+VARIABLES:
+- bool modMenuEnabled: Turns the whole mod on/off
+- bool speedBoostEnabled: Turns just the speed boost on/off  
+- float speedMultiplier: How much faster you go (2.0 = twice as fast)
+- Rect menuRect: Position and size of the menu window
+- bool showMenu: Whether the menu is visible or not
+
+FUNCTIONS:
+- Awake(): Runs once when your mod loads (like a constructor)
+- Update(): Runs every frame (60+ times per second)
+- OnGUI(): Draws UI elements on the screen
+- DrawMenu(): What goes inside the menu window
+- ApplySpeedBoost(): Your custom code to make the player faster
+
+UNITY INPUT:
+Input.GetKeyDown(KeyCode.F1) - Checks if F1 was just pressed
+
+UNITY GUI:
+- GUI.Window() - Creates a draggable window
+- GUILayout.Toggle() - Creates a checkbox
+- GUILayout.Label() - Creates text
+- GUILayout.HorizontalSlider() - Creates a slider
+- GUILayout.Button() - Creates a button
+
+=== What You Need to Learn ===
+
+1. How to find the player object in Gorilla Tag
+2. What component controls movement
+3. Which variables control speed
+4. How to modify them safely
+
+Example pattern (pseudocode):
+GameObject player = [find the player somehow];
+MovementComponent movement = player.GetComponent<MovementComponent>();
+movement.speed = baseSpeed * speedMultiplier;
+
+=== Helpful Tips ===
+
+- Use Logger.LogInfo("message") to debug
+- Check BepInEx\LogOutput.log to see your messages
+- Start small - get ONE thing working before adding more
+- Read other people's mod source code to learn
+- Ask in modding communities when stuck
+
