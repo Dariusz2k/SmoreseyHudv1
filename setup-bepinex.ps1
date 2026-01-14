@@ -65,7 +65,7 @@ try {
         if (Test-Path $sourcePath) {
             $fileName = Split-Path $file -Leaf
             Copy-Item $sourcePath -Destination $LibsDir -Force
-            Write-Host "  ✓ $fileName" -ForegroundColor Green
+            Write-Host "  OK $fileName" -ForegroundColor Green
             $copied++
         }
     }
@@ -84,9 +84,9 @@ try {
     Write-Host "BepInEx setup completed successfully!" -ForegroundColor Green
     Write-Host "=========================================" -ForegroundColor Green
     Write-Host ""
-    Write-Host "The following assemblies are now in $LibsDir`:"
+    Write-Host "The following assemblies are now in $LibsDir :"
     Get-ChildItem -Path $LibsDir -Filter "*.dll" | ForEach-Object {
-        Write-Host "  • $($_.Name)"
+        Write-Host "  - $($_.Name)"
     }
     Write-Host ""
     Write-Host "Note: Unity DLLs should be extracted from your Gorilla Tag installation." -ForegroundColor Yellow
