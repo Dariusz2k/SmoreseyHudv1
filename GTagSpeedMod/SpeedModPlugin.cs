@@ -5,22 +5,55 @@ using System;
 namespace GTagSpeedMod
 {
     // This attribute tells BepInEx about your mod
-    [BepInPlugin("com.yourname.gtagspeedmod", "GTag Speed Mod", "1.0.0")]
+    [BepInPlugin("com.yourname.gtagspeedmod", "GTag Mod Menu", "1.1.0")]
     public class SpeedModPlugin : BaseUnityPlugin
     {
-        // These are our mod settings
-        private bool modMenuEnabled = false;
-        private bool speedBoostEnabled = false;
+        private class MenuOption
+        {
+            public string Name { get; }
+            public string Description { get; }
+            public bool Enabled { get; set; }
+
+            public MenuOption(string name, string description)
+            {
+                Name = name;
+                Description = description;
+            }
+        }
+
+        private readonly MenuOption[] options =
+        {
+            new MenuOption("Speed Boost", "Boost movement speed"),
+            new MenuOption("Fly", "Toggle flight mode"),
+            new MenuOption("No Clip", "Disable collisions"),
+            new MenuOption("Long Arms", "Increase arm reach"),
+            new MenuOption("High Jump", "Jump higher"),
+            new MenuOption("Low Gravity", "Reduce gravity"),
+            new MenuOption("Wall Walk", "Stick to walls"),
+            new MenuOption("ESP", "Show player outlines"),
+            new MenuOption("Tag Aura", "Auto-tag nearby players"),
+            new MenuOption("Anti Tag", "Avoid getting tagged"),
+            new MenuOption("Platforms", "Spawn temporary platforms"),
+            new MenuOption("Chams", "Colorize player models"),
+            new MenuOption("Teleport", "Teleport to look position"),
+            new MenuOption("Speed Lines", "Visual speed effect"),
+            new MenuOption("Night Mode", "Darken scene lighting"),
+            new MenuOption("Name Spoof", "Spoof player name"),
+            new MenuOption("Random Colors", "Cycle player colors"),
+            new MenuOption("Slow Fall", "Reduce fall speed"),
+            new MenuOption("Spin Bots", "Spin player model"),
+            new MenuOption("FOV Boost", "Increase camera field of view")
+        };
+
         private float speedMultiplier = 2.0f;
-        
-        // UI positioning
-        private Rect menuRect = new Rect(20, 20, 250, 200);
+        private Vector2 scrollPosition = Vector2.zero;
+        private Rect menuRect = new Rect(20, 20, 360, 420);
         private bool showMenu = false;
         
         // This runs when your mod loads
         void Awake()
         {
-            Logger.LogInfo("GTag Speed Mod has loaded!");
+            Logger.LogInfo("GTag Mod Menu has loaded!");
         }
         
         // This runs every frame
@@ -33,8 +66,7 @@ namespace GTagSpeedMod
                 Logger.LogInfo($"Menu toggled: {showMenu}");
             }
             
-            // Apply speed boost if enabled
-            if (speedBoostEnabled)
+            if (options[0].Enabled)
             {
                 ApplySpeedBoost();
             }
@@ -46,7 +78,7 @@ namespace GTagSpeedMod
             if (showMenu)
             {
                 // Create a window for our menu
-                menuRect = GUI.Window(0, menuRect, DrawMenu, "Speed Mod Menu");
+                menuRect = GUI.Window(0, menuRect, DrawMenu, "GTag Mod Menu");
             }
         }
         
@@ -54,26 +86,31 @@ namespace GTagSpeedMod
         void DrawMenu(int windowID)
         {
             // Make the window draggable
-            GUI.DragWindow(new Rect(0, 0, 250, 20));
-            
-            GUILayout.Space(10);
-            
-            // Toggle for speed boost
-            speedBoostEnabled = GUILayout.Toggle(speedBoostEnabled, "Speed Boost Enabled");
-            
-            GUILayout.Space(10);
-            
-            // Slider to control speed
+            GUI.DragWindow(new Rect(0, 0, 360, 20));
+
+            GUILayout.Space(8);
+            GUILayout.Label("Toggles", GUILayout.Height(18));
+
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(260));
+            foreach (var option in options)
+            {
+                option.Enabled = GUILayout.Toggle(option.Enabled, option.Name);
+                if (!string.IsNullOrWhiteSpace(option.Description))
+                {
+                    GUILayout.Label($"  - {option.Description}", GUILayout.Height(16));
+                }
+                GUILayout.Space(4);
+            }
+            GUILayout.EndScrollView();
+
+            GUILayout.Space(6);
             GUILayout.Label($"Speed Multiplier: {speedMultiplier:F1}x");
             speedMultiplier = GUILayout.HorizontalSlider(speedMultiplier, 1.0f, 5.0f);
-            
-            GUILayout.Space(10);
-            
-            // Info text
+
+            GUILayout.Space(8);
             GUILayout.Label("Press F1 to toggle menu");
-            
-            GUILayout.Space(10);
-            
+
+            GUILayout.Space(6);
             if (GUILayout.Button("Close"))
             {
                 showMenu = false;

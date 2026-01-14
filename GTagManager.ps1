@@ -468,8 +468,32 @@ function InstallMod {
 
         CheckModStatus
 
+        $menuOptions = @(
+            "Speed Boost",
+            "Fly",
+            "No Clip",
+            "Long Arms",
+            "High Jump",
+            "Low Gravity",
+            "Wall Walk",
+            "ESP",
+            "Tag Aura",
+            "Anti Tag",
+            "Platforms",
+            "Chams",
+            "Teleport",
+            "Speed Lines",
+            "Night Mode",
+            "Name Spoof",
+            "Random Colors",
+            "Slow Fall",
+            "Spin Bots",
+            "FOV Boost"
+        )
+        $menuOptionsText = ($menuOptions | ForEach-Object { " - $_" }) -join "`n"
+
         [System.Windows.Forms.MessageBox]::Show(
-            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress F1 in-game to open the mod menu.",
+            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress F1 in-game to open the mod menu.`n`nAvailable options:`n$menuOptionsText",
             "Installation Complete",
             'OK',
             'Information'
