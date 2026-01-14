@@ -58,6 +58,9 @@ namespace GTagSpeedMod
         private GUIStyle toggleButtonStyle;
         private float nextHandSearchTime;
         private bool hasLoggedSpeedWarning;
+        private float nextInputPollerRefreshTime;
+        private Type inputPollerType;
+        private object inputPollerInstance;
         
         // This runs when your mod loads
         void Awake()
@@ -71,19 +74,7 @@ namespace GTagSpeedMod
         void Update()
         {
             // Press Y/B (or F1 as fallback) to toggle the menu
-            if (Input.GetKeyDown(KeyCode.F1)
-                || Input.GetKeyDown(KeyCode.Y)
-                || Input.GetKeyDown(KeyCode.B)
-                || Input.GetKeyDown(KeyCode.JoystickButton3)
-                || Input.GetKeyDown(KeyCode.JoystickButton1)
-                || Input.GetKeyDown(KeyCode.JoystickButton2)
-                || Input.GetKeyDown(KeyCode.JoystickButton0)
-                || Input.GetKeyDown(KeyCode.JoystickButton4)
-                || Input.GetKeyDown(KeyCode.JoystickButton5)
-                || Input.GetKeyDown(KeyCode.JoystickButton6)
-                || Input.GetKeyDown(KeyCode.JoystickButton7)
-                || Input.GetKeyDown(KeyCode.JoystickButton8)
-                || Input.GetKeyDown(KeyCode.JoystickButton9))
+            if (IsMenuTogglePressed())
             {
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
@@ -195,6 +186,11 @@ namespace GTagSpeedMod
 
         private void TryFindHandAnchor()
         {
+            if (TryFindHandFromGorillaTagger())
+            {
+                return;
+            }
+
             var rightHand = GameObject.Find("RightHand Controller");
             if (rightHand != null)
             {
@@ -244,6 +240,177 @@ namespace GTagSpeedMod
                     return;
                 }
             }
+        }
+
+        private bool TryFindHandFromGorillaTagger()
+        {
+            var gorillaTaggerType = FindTypeByName("GorillaTagger");
+            if (gorillaTaggerType == null)
+            {
+                return false;
+            }
+
+            var instance = GetInstanceFromType(gorillaTaggerType);
+            if (instance == null)
+            {
+                return false;
+            }
+
+            if (TryGetTransformMember(gorillaTaggerType, instance, "rightHandTransform", out var rightHand)
+                || TryGetTransformMember(gorillaTaggerType, instance, "RightHandTransform", out rightHand)
+                || TryGetTransformMember(gorillaTaggerType, instance, "rightHand", out rightHand)
+                || TryGetTransformMember(gorillaTaggerType, instance, "RightHand", out rightHand))
+            {
+                handAnchor = rightHand;
+                return true;
+            }
+
+            if (TryGetTransformMember(gorillaTaggerType, instance, "leftHandTransform", out var leftHand)
+                || TryGetTransformMember(gorillaTaggerType, instance, "LeftHandTransform", out leftHand)
+                || TryGetTransformMember(gorillaTaggerType, instance, "leftHand", out leftHand)
+                || TryGetTransformMember(gorillaTaggerType, instance, "LeftHand", out leftHand))
+            {
+                handAnchor = leftHand;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsMenuTogglePressed()
+        {
+            if (Input.GetKeyDown(KeyCode.F1)
+                || Input.GetKeyDown(KeyCode.Y)
+                || Input.GetKeyDown(KeyCode.B)
+                || Input.GetKeyDown(KeyCode.JoystickButton3)
+                || Input.GetKeyDown(KeyCode.JoystickButton1)
+                || Input.GetKeyDown(KeyCode.JoystickButton2)
+                || Input.GetKeyDown(KeyCode.JoystickButton0)
+                || Input.GetKeyDown(KeyCode.JoystickButton4)
+                || Input.GetKeyDown(KeyCode.JoystickButton5)
+                || Input.GetKeyDown(KeyCode.JoystickButton6)
+                || Input.GetKeyDown(KeyCode.JoystickButton7)
+                || Input.GetKeyDown(KeyCode.JoystickButton8)
+                || Input.GetKeyDown(KeyCode.JoystickButton9))
+            {
+                return true;
+            }
+
+            if (Time.time >= nextInputPollerRefreshTime)
+            {
+                CacheInputPoller();
+                nextInputPollerRefreshTime = Time.time + 2f;
+            }
+
+            if (inputPollerType == null || inputPollerInstance == null)
+            {
+                return false;
+            }
+
+            return GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton");
+        }
+
+        private void CacheInputPoller()
+        {
+            inputPollerType = FindTypeByName("ControllerInputPoller");
+            if (inputPollerType == null)
+            {
+                inputPollerInstance = null;
+                return;
+            }
+
+            inputPollerInstance = GetInstanceFromType(inputPollerType);
+        }
+
+        private static Type FindTypeByName(string typeName)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (var index = 0; index < assemblies.Length; index++)
+            {
+                var assembly = assemblies[index];
+                if (assembly == null)
+                {
+                    continue;
+                }
+
+                var type = assembly.GetType(typeName, false);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
+
+            return null;
+        }
+
+        private static object GetInstanceFromType(Type type)
+        {
+            var instanceProperty = type.GetProperty("Instance")
+                                   ?? type.GetProperty("instance")
+                                   ?? type.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            if (instanceProperty != null)
+            {
+                return instanceProperty.GetValue(null, null);
+            }
+
+            var instanceField = type.GetField("Instance")
+                               ?? type.GetField("instance")
+                               ?? type.GetField("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            if (instanceField != null)
+            {
+                return instanceField.GetValue(null);
+            }
+
+            return null;
+        }
+
+        private static bool TryGetTransformMember(Type type, object instance, string memberName, out Transform transform)
+        {
+            transform = null;
+            if (type == null || instance == null)
+            {
+                return false;
+            }
+
+            var property = type.GetProperty(memberName);
+            if (property != null && typeof(Transform).IsAssignableFrom(property.PropertyType))
+            {
+                transform = property.GetValue(instance, null) as Transform;
+                return transform != null;
+            }
+
+            var field = type.GetField(memberName);
+            if (field != null && typeof(Transform).IsAssignableFrom(field.FieldType))
+            {
+                transform = field.GetValue(instance) as Transform;
+                return transform != null;
+            }
+
+            return false;
+        }
+
+        private static bool GetBoolMember(Type type, object instance, string memberName)
+        {
+            var property = type.GetProperty(memberName);
+            if (property != null && property.PropertyType == typeof(bool))
+            {
+                return (bool)property.GetValue(instance, null);
+            }
+
+            var field = type.GetField(memberName);
+            if (field != null && field.FieldType == typeof(bool))
+            {
+                return (bool)field.GetValue(instance);
+            }
+
+            return false;
         }
 
         private bool TryGetHandMenuRect(out Rect rect)
