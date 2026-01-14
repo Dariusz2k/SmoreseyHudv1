@@ -52,12 +52,17 @@ namespace GTagSpeedMod
         private Transform handAnchor;
         private Vector3 handMenuOffset = new Vector3(0.05f, 0.05f, 0.15f);
         private Camera cachedCamera;
+        private Texture2D pinkTexture;
+        private GUIStyle titleStyle;
+        private GUIStyle buttonStyle;
+        private GUIStyle toggleButtonStyle;
         
         // This runs when your mod loads
         void Awake()
         {
             Logger.LogInfo("GTag Mod Menu has loaded!");
             TryFindHandAnchor();
+            BuildMenuStyles();
         }
         
         // This runs every frame
@@ -116,12 +121,16 @@ namespace GTagSpeedMod
             GUI.DragWindow(new Rect(0, 0, 360, 20));
 
             GUILayout.Space(8);
-            GUILayout.Label("Toggles", GUILayout.Height(18));
+            GUILayout.Label("Shmoresy Menu", titleStyle, GUILayout.Height(26));
 
-            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(260));
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(300));
             foreach (var option in options)
             {
-                option.Enabled = GUILayout.Toggle(option.Enabled, option.Name);
+                var label = option.Enabled ? $"[ON] {option.Name}" : $"[OFF] {option.Name}";
+                if (GUILayout.Button(label, toggleButtonStyle, GUILayout.Height(32)))
+                {
+                    option.Enabled = !option.Enabled;
+                }
                 if (!string.IsNullOrWhiteSpace(option.Description))
                 {
                     GUILayout.Label($"  - {option.Description}", GUILayout.Height(16));
@@ -138,7 +147,7 @@ namespace GTagSpeedMod
             GUILayout.Label("Press Y/B (or F1) to toggle menu");
 
             GUILayout.Space(6);
-            if (GUILayout.Button("Close"))
+            if (GUILayout.Button("Close", buttonStyle, GUILayout.Height(28)))
             {
                 showMenu = false;
             }
@@ -257,6 +266,36 @@ namespace GTagSpeedMod
             }
 
             return cachedCamera;
+        }
+
+        private void BuildMenuStyles()
+        {
+            if (pinkTexture == null)
+            {
+                pinkTexture = new Texture2D(1, 1);
+                pinkTexture.SetPixel(0, 0, new Color(1f, 0.2f, 0.6f, 0.9f));
+                pinkTexture.Apply();
+            }
+
+            titleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 18,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = Color.white }
+            };
+
+            buttonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 14,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = Color.white, background = pinkTexture },
+                hover = { textColor = Color.white, background = pinkTexture }
+            };
+
+            toggleButtonStyle = new GUIStyle(buttonStyle)
+            {
+                fontSize = 13
+            };
         }
     }
 }
