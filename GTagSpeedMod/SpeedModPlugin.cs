@@ -1,6 +1,8 @@
 using BepInEx;
 using UnityEngine;
 using System;
+using UnityEngine.UI;
+using GorillaLocomotion;
 
 namespace GTagSpeedMod
 {
@@ -49,11 +51,15 @@ namespace GTagSpeedMod
         private Vector2 scrollPosition = Vector2.zero;
         private Rect menuRect = new Rect(20, 20, 360, 420);
         private bool showMenu = false;
+        private GameObject handMenuRoot;
+        private Text handMenuText;
+        private Transform handAnchor;
         
         // This runs when your mod loads
         void Awake()
         {
             Logger.LogInfo("GTag Mod Menu has loaded!");
+            TryFindHandAnchor();
         }
         
         // This runs every frame
@@ -65,6 +71,16 @@ namespace GTagSpeedMod
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
             }
+
+            if (showMenu)
+            {
+                EnsureHandMenu();
+                UpdateHandMenuText();
+            }
+            else if (handMenuRoot != null)
+            {
+                handMenuRoot.SetActive(false);
+            }
             
             if (options[0].Enabled)
             {
@@ -75,7 +91,7 @@ namespace GTagSpeedMod
         // This draws the UI on screen
         void OnGUI()
         {
-            if (showMenu)
+            if (showMenu && handMenuRoot == null)
             {
                 // Create a window for our menu
                 menuRect = GUI.Window(0, menuRect, DrawMenu, "GTag Mod Menu");
@@ -138,6 +154,96 @@ namespace GTagSpeedMod
             // }
             
             Logger.LogWarning("Speed boost logic needs to be implemented!");
+        }
+
+        private void TryFindHandAnchor()
+        {
+            if (Player.Instance != null && Player.Instance.rightHandTransform != null)
+            {
+                handAnchor = Player.Instance.rightHandTransform;
+                return;
+            }
+
+            var rightHand = GameObject.Find("RightHand Controller");
+            if (rightHand != null)
+            {
+                handAnchor = rightHand.transform;
+            }
+        }
+
+        private void EnsureHandMenu()
+        {
+            if (handMenuRoot != null)
+            {
+                handMenuRoot.SetActive(true);
+                if (handAnchor != null)
+                {
+                    handMenuRoot.transform.SetParent(handAnchor, false);
+                }
+                return;
+            }
+
+            if (handAnchor == null)
+            {
+                TryFindHandAnchor();
+                if (handAnchor == null)
+                {
+                    return;
+                }
+            }
+
+            handMenuRoot = new GameObject("GTagHandMenu");
+            handMenuRoot.transform.SetParent(handAnchor, false);
+            handMenuRoot.transform.localPosition = new Vector3(0.05f, 0.05f, 0.15f);
+            handMenuRoot.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            handMenuRoot.transform.localScale = Vector3.one * 0.0025f;
+
+            var canvas = handMenuRoot.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            handMenuRoot.AddComponent<CanvasScaler>();
+            handMenuRoot.AddComponent<GraphicRaycaster>();
+
+            var panel = new GameObject("Panel");
+            panel.transform.SetParent(handMenuRoot.transform, false);
+            var panelImage = panel.AddComponent<Image>();
+            panelImage.color = new Color(0f, 0f, 0f, 0.75f);
+            var panelRect = panel.GetComponent<RectTransform>();
+            panelRect.sizeDelta = new Vector2(600f, 900f);
+
+            var textObject = new GameObject("MenuText");
+            textObject.transform.SetParent(panel.transform, false);
+            handMenuText = textObject.AddComponent<Text>();
+            handMenuText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            handMenuText.fontSize = 36;
+            handMenuText.color = Color.white;
+            handMenuText.alignment = TextAnchor.UpperLeft;
+            var textRect = handMenuText.GetComponent<RectTransform>();
+            textRect.anchorMin = new Vector2(0f, 1f);
+            textRect.anchorMax = new Vector2(1f, 1f);
+            textRect.pivot = new Vector2(0.5f, 1f);
+            textRect.sizeDelta = new Vector2(-40f, -40f);
+            textRect.anchoredPosition = new Vector2(0f, -20f);
+        }
+
+        private void UpdateHandMenuText()
+        {
+            if (handMenuText == null)
+            {
+                return;
+            }
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("GTag Mod Menu");
+            builder.AppendLine($"Speed: {speedMultiplier:F1}x");
+            builder.AppendLine("--------------------");
+            foreach (var option in options)
+            {
+                var status = option.Enabled ? "[X]" : "[ ]";
+                builder.AppendLine($"{status} {option.Name}");
+            }
+            builder.AppendLine("--------------------");
+            builder.AppendLine("Press Y/B to hide");
+            handMenuText.text = builder.ToString();
         }
     }
 }
