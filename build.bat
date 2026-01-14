@@ -59,14 +59,27 @@ if not defined CURRENT_BRANCH (
     goto MENU
 )
 
+set "PULL_BRANCH="
+
+if exist "build.config" (
+    for /f "usebackq tokens=1,* delims==" %%a in ("build.config") do (
+        if /i "%%a"=="PULL_BRANCH" set "PULL_BRANCH=%%b"
+    )
+)
+
+if not defined PULL_BRANCH (
+    set "PULL_BRANCH=%CURRENT_BRANCH%"
+)
+
 echo Current branch: %CURRENT_BRANCH%
+echo Configured pull branch: %PULL_BRANCH%
 echo.
 echo Fetching latest changes...
 git fetch origin
 
 echo.
-echo Pulling changes for branch: %CURRENT_BRANCH%
-git pull origin %CURRENT_BRANCH%
+echo Pulling changes for branch: %PULL_BRANCH%
+git pull origin %PULL_BRANCH%
 
 if %ERRORLEVEL% EQU 0 (
     echo.
