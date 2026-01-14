@@ -280,14 +280,12 @@ namespace GTagSpeedMod
             titleStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 18,
-                alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = Color.white }
             };
 
             buttonStyle = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 14,
-                alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = Color.white, background = pinkTexture },
                 hover = { textColor = Color.white, background = pinkTexture }
             };
