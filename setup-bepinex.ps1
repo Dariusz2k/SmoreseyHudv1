@@ -51,9 +51,10 @@ try {
     $copied = 0
 
     # Core BepInEx files from BepInEx\core folder
+    # Note: BepInEx.Core.dll only exists in BepInEx 6.x, not in 5.x
+    # In BepInEx 5.x, BaseUnityPlugin is in BepInEx.dll
     $coreFiles = @(
         "BepInEx\core\BepInEx.dll",
-        "BepInEx\core\BepInEx.Core.dll",
         "BepInEx\core\0Harmony.dll",
         "BepInEx\core\Mono.Cecil.dll",
         "BepInEx\core\MonoMod.RuntimeDetour.dll",

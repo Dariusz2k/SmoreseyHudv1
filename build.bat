@@ -167,13 +167,6 @@ if not exist "libs\BepInEx.dll" (
     echo [OK] BepInEx.dll
 )
 
-if not exist "libs\BepInEx.Core.dll" (
-    echo [MISSING] BepInEx.Core.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] BepInEx.Core.dll
-)
-
 if not exist "libs\0Harmony.dll" (
     echo [MISSING] 0Harmony.dll
     set MISSING_DEPS=1

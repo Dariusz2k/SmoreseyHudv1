@@ -22,10 +22,10 @@ This guide will help you set up your development environment for building GTag m
 ## Required Dependencies
 
 ### BepInEx Assemblies
-These are automatically downloaded by the setup script:
-- `BepInEx.dll` - Core BepInEx loader
-- `BepInEx.Core.dll` - Contains `BaseUnityPlugin` class
+These are automatically downloaded by the setup script (BepInEx 5.x):
+- `BepInEx.dll` - Core BepInEx loader (contains `BaseUnityPlugin` class)
 - `0Harmony.dll` - Harmony patching library
+- Additional support DLLs (Mono.Cecil, MonoMod, etc.)
 
 ### Unity Assemblies
 These must be extracted from your Gorilla Tag installation:
@@ -50,9 +50,9 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 1. Download BepInEx from [GitHub Releases](https://github.com/BepInEx/BepInEx/releases)
 2. Extract the archive
 3. Copy these files from `BepInEx/core/` to the `libs/` folder:
-   - BepInEx.dll
-   - BepInEx.Core.dll
+   - BepInEx.dll (contains BaseUnityPlugin for BepInEx 5.x)
    - 0Harmony.dll
+   - Other support DLLs as needed
 
 4. Copy Unity DLLs from your Gorilla Tag installation:
    - Usually located at: `[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
@@ -61,8 +61,9 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 ## Troubleshooting
 
 ### Build Error: "BaseUnityPlugin could not be found"
-- **Cause**: Missing BepInEx.Core.dll
+- **Cause**: Missing BepInEx.dll or incorrect reference
 - **Solution**: Run option 4 from the build menu to install BepInEx dependencies
+- **Note**: In BepInEx 5.x, BaseUnityPlugin is in BepInEx.dll (not BepInEx.Core.dll which is only in 6.x)
 
 ### Build Error: "UnityEngine could not be found"
 - **Cause**: Missing Unity DLLs
