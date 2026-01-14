@@ -464,7 +464,7 @@ function InstallMod {
         WriteStatus "Location: $installedModPath"
         WriteStatus "================================================"
         WriteStatus ""
-        WriteStatus ">> READY TO PLAY! Launch Gorilla Tag and press F1 in-game"
+        WriteStatus ">> READY TO PLAY! Launch Gorilla Tag and press Y/B (or F1) in-game"
 
         CheckModStatus
 
@@ -493,7 +493,7 @@ function InstallMod {
         $menuOptionsText = ($menuOptions | ForEach-Object { " - $_" }) -join "`n"
 
         [System.Windows.Forms.MessageBox]::Show(
-            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress F1 in-game to open the mod menu.`n`nAvailable options:`n$menuOptionsText",
+            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress Y/B (or F1) in-game to open the mod menu.`n`nAvailable options:`n$menuOptionsText",
             "Installation Complete",
             'OK',
             'Information'
