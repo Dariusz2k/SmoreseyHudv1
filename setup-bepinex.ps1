@@ -5,6 +5,8 @@ $ErrorActionPreference = "Stop"
 
 $LibsDir = ".\libs"
 $FixScript = ".\fix-bepinex-dev-dlls.ps1"
+$TemplateSource = "https://nuget.bepinex.dev/v3/index.json"
+$TemplatePackage = "BepInEx.Templates::2.0.0-be.4"
 
 Write-Host "=========================================" -ForegroundColor Green
 Write-Host "BepInEx Dependency Setup" -ForegroundColor Green
@@ -19,6 +21,17 @@ if (-not (Test-Path $FixScript)) {
 
 Write-Host "Running development DLL installer..." -ForegroundColor Yellow
 & $FixScript
+
+Write-Host ""
+Write-Host "Install BepInEx plugin templates? (dotnet new install)" -ForegroundColor Yellow
+Write-Host "This is required for creating new plugin projects." -ForegroundColor Yellow
+Write-Host ""
+set /p INSTALL_TEMPLATES="Install templates now? (Y/N): "
+if /i "$INSTALL_TEMPLATES" -eq "Y" {
+    Write-Host ""
+    Write-Host "Installing templates..." -ForegroundColor Yellow
+    dotnet new install $TemplatePackage --nuget-source $TemplateSource
+}
 
 Write-Host "Press any key to continue..."
 $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
