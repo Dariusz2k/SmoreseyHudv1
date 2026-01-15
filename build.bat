@@ -305,6 +305,39 @@ if %MISSING_DEPS% EQU 1 (
 echo All required DLLs found.
 echo.
 
+REM Verify BepInEx.dll contains required types
+echo Verifying BepInEx.dll integrity...
+powershell.exe -ExecutionPolicy Bypass -Command "try { $dllPath = (Resolve-Path 'libs\BepInEx.dll').Path; Write-Host \"Loading: $dllPath\" -ForegroundColor Cyan; $assembly = [System.Reflection.Assembly]::LoadFrom($dllPath); $version = $assembly.GetName().Version; Write-Host \"Version: $version\" -ForegroundColor Cyan; $baseUnityPlugin = $assembly.GetTypes() | Where-Object { $_.Name -eq 'BaseUnityPlugin' }; if (-not $baseUnityPlugin) { Write-Host '[ERROR] BepInEx.dll does not contain BaseUnityPlugin!' -ForegroundColor Red; Write-Host 'Available types:' -ForegroundColor Yellow; $assembly.GetTypes() | Select-Object -First 10 | ForEach-Object { Write-Host \"  - $($_.FullName)\" -ForegroundColor Gray }; exit 1 } else { Write-Host '[OK] BepInEx.dll verified - BaseUnityPlugin found' -ForegroundColor Green; Write-Host \"Full type name: $($baseUnityPlugin.FullName)\" -ForegroundColor Cyan; exit 0 } } catch { Write-Host \"[ERROR] Failed to load BepInEx.dll: $($_.Exception.Message)\" -ForegroundColor Red; exit 1 }"
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ========================================
+    echo ERROR: Invalid BepInEx.dll!
+    echo ========================================
+    echo.
+    echo Your BepInEx.dll does not contain the required BaseUnityPlugin type.
+    echo This usually means you have the wrong version of BepInEx.
+    echo.
+    echo Required: BepInEx 5.4.x for IL2CPP or Mono
+    echo.
+    echo Would you like to run the GTag Manager to extract the correct DLLs?
+    echo.
+    set /p RUN_MANAGER="Run GTag Manager now? (Y/N): "
+
+    if /i "%RUN_MANAGER%"=="Y" (
+        goto LAUNCH_MANAGER
+    ) else (
+        echo.
+        echo Please use Option 3 to launch GTag Manager and extract DLLs.
+        echo Or use Option 5 to extract Unity DLLs from Gorilla Tag.
+        echo.
+        pause
+        goto MENU
+    )
+)
+
+echo.
+
 REM Build the project
 echo Building project...
 echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release
