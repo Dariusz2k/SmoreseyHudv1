@@ -29,8 +29,13 @@ function Get-BepInExAssetInfo {
     }
 
     $version = $Tag.TrimStart("v")
-    $expectedAsset = "BepInEx_x64_$version.zip"
-    $asset = $release.assets | Where-Object { $_.name -eq $expectedAsset } | Select-Object -First 1
+    $assetNames = @(
+        "BepInEx_x64_$version_DEV.zip",
+        "BepInEx_x64_$version_dev.zip",
+        "BepInEx_x64_$version.zip"
+    )
+
+    $asset = $release.assets | Where-Object { $assetNames -contains $_.name } | Select-Object -First 1
     if (-not $asset) {
         return $null
     }
@@ -59,8 +64,12 @@ function Get-LatestBepInEx54AssetInfo {
     }
 
     $version = $release.tag_name.TrimStart("v")
-    $expectedAsset = "BepInEx_x64_$version.zip"
-    $asset = $release.assets | Where-Object { $_.name -eq $expectedAsset } | Select-Object -First 1
+    $assetNames = @(
+        "BepInEx_x64_$version_DEV.zip",
+        "BepInEx_x64_$version_dev.zip",
+        "BepInEx_x64_$version.zip"
+    )
+    $asset = $release.assets | Where-Object { $assetNames -contains $_.name } | Select-Object -First 1
     if (-not $asset) {
         return $null
     }
@@ -137,14 +146,32 @@ try {
     exit 1
 }
 
-# Copy required DLLs from BepInEx\core
-$corePath = Join-Path $tempPath "BepInEx\core"
-if (-not (Test-Path $corePath)) {
-    Write-Host "ERROR: BepInEx\core folder not found in extracted files!" -ForegroundColor Red
+# Locate the BepInEx.dll that contains BaseUnityPlugin (development DLL)
+$bepinexDllPath = $null
+$candidateDlls = Get-ChildItem -Path $tempPath -Recurse -Filter "BepInEx.dll" -ErrorAction SilentlyContinue
+foreach ($candidate in $candidateDlls) {
+    try {
+        $assembly = [System.Reflection.Assembly]::LoadFrom($candidate.FullName)
+        if ($assembly.GetType("BepInEx.BaseUnityPlugin")) {
+            $bepinexDllPath = $candidate.FullName
+            break
+        }
+    } catch {
+        continue
+    }
+}
+
+if (-not $bepinexDllPath) {
+    Write-Host "ERROR: Could not find a development BepInEx.dll containing BaseUnityPlugin." -ForegroundColor Red
+    Write-Host "Make sure you are using a 5.4.x DEV zip from the BepInEx releases page." -ForegroundColor Yellow
+    Write-Host "https://github.com/BepInEx/BepInEx/releases" -ForegroundColor Cyan
     Write-Host ""
     pause
     exit 1
 }
+
+# Copy required DLLs from the folder containing BepInEx.dll
+$corePath = Split-Path -Path $bepinexDllPath -Parent
 
 Write-Host "Installing development DLLs to libs folder..." -ForegroundColor Yellow
 Write-Host ""
