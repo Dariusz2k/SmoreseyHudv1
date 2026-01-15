@@ -102,7 +102,8 @@ namespace GTagSpeedMod
 
             Logger.LogInfo("========================================");
             Logger.LogInfo("GTag Mod Menu loaded successfully!");
-            Logger.LogInfo("Press F1, Y, or B to toggle menu");
+            Logger.LogInfo("Press Y or B button on VR controller to toggle menu");
+            Logger.LogInfo("(Keyboard input not available - Gorilla Tag uses new Input System)");
             Logger.LogInfo("Menu styles will be built on first OnGUI call");
             Logger.LogInfo("========================================");
 
@@ -553,10 +554,6 @@ namespace GTagSpeedMod
         private void DebugInputState()
         {
             Logger.LogInfo("[Input] === Input Debug ===");
-            Logger.LogInfo($"[Input] F1 key: {Input.GetKey(KeyCode.F1)}");
-            Logger.LogInfo($"[Input] Y key: {Input.GetKey(KeyCode.Y)}");
-            Logger.LogInfo($"[Input] B key: {Input.GetKey(KeyCode.B)}");
-            Logger.LogInfo($"[Input] Joystick buttons detected: {Input.GetJoystickNames().Length} controllers");
 
             if (inputPollerType != null && inputPollerInstance != null)
             {
@@ -568,44 +565,18 @@ namespace GTagSpeedMod
             }
             else
             {
-                Logger.LogInfo("[Input] InputPoller NOT found - will search for ControllerInputPoller");
+                Logger.LogInfo("[Input] InputPoller NOT found - searching for ControllerInputPoller");
+                Logger.LogInfo("[Input] NOTE: Gorilla Tag uses new Unity Input System - legacy Input API not available");
             }
 
             Logger.LogInfo($"[Input] Current menu state: {(showMenu ? "VISIBLE" : "HIDDEN")}");
-            Logger.LogInfo("[Input] === Press Y/B button on controller or F1 on keyboard to toggle ===");
+            Logger.LogInfo("[Input] === Press Y or B button on controller to toggle menu ===");
         }
 
         private bool IsMenuTogglePressed()
         {
-            // Check keyboard inputs
-            if (Input.GetKeyDown(KeyCode.F1))
-            {
-                Logger.LogInfo("[Input] Menu toggle detected: F1 key");
-                return true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.Y))
-            {
-                Logger.LogInfo("[Input] Menu toggle detected: Y key");
-                return true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.B))
-            {
-                Logger.LogInfo("[Input] Menu toggle detected: B key");
-                return true;
-            }
-
-            // Check joystick buttons
-            for (int i = 0; i <= 9; i++)
-            {
-                var keyCode = (KeyCode)((int)KeyCode.JoystickButton0 + i);
-                if (Input.GetKeyDown(keyCode))
-                {
-                    Logger.LogInfo($"[Input] Menu toggle detected: JoystickButton{i}");
-                    return true;
-                }
-            }
+            // Gorilla Tag uses Unity's new Input System, so we can't use Input.GetKeyDown()
+            // We must use ControllerInputPoller instead
 
             // Refresh InputPoller cache periodically
             if (Time.time >= nextInputPollerRefreshTime)
@@ -619,30 +590,26 @@ namespace GTagSpeedMod
                 return false;
             }
 
-            // Check ControllerInputPoller buttons
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown"))
+            // Check for button DOWN events (pressed this frame)
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown"))
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Right Controller Primary Button (Y)");
                 return true;
             }
 
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown"))
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown"))
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Right Controller Secondary Button (B)");
                 return true;
             }
 
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown"))
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown"))
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Left Controller Primary Button (X)");
                 return true;
             }
 
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown"))
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown"))
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Left Controller Secondary Button (A)");
                 return true;
@@ -653,14 +620,29 @@ namespace GTagSpeedMod
 
         private void CacheInputPoller()
         {
+            if (inputPollerType != null && inputPollerInstance != null)
+            {
+                // Already cached and working
+                return;
+            }
+
             inputPollerType = FindTypeByName("ControllerInputPoller");
             if (inputPollerType == null)
             {
+                Logger.LogInfo("[Input] ControllerInputPoller type not found - input may not be ready yet");
                 inputPollerInstance = null;
                 return;
             }
 
             inputPollerInstance = GetInstanceFromType(inputPollerType);
+            if (inputPollerInstance == null)
+            {
+                Logger.LogInfo("[Input] ControllerInputPoller found but instance is null - waiting for initialization");
+            }
+            else
+            {
+                Logger.LogInfo("[Input] ControllerInputPoller successfully cached - controller input ready!");
+            }
         }
 
         private static Type FindTypeByName(string typeName)
