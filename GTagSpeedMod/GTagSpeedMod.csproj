@@ -43,6 +43,18 @@
       <HintPath>$(LibsPath)\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>$(LibsPath)\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>$(LibsPath)\MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>$(LibsPath)\MonoMod.Utils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <!-- Unity References -->
     <Reference Include="UnityEngine">
       <HintPath>$(LibsPath)\UnityEngine.dll</HintPath>
