@@ -74,18 +74,55 @@ if not defined PULL_BRANCH (
 echo Current branch: %CURRENT_BRANCH%
 echo Configured pull branch: %PULL_BRANCH%
 echo.
-echo Fetching latest changes...
-git fetch origin
+echo WARNING: This will discard ALL local changes!
+echo Your working directory will be reset to match the remote branch.
+echo.
+set /p CONFIRM="Are you sure you want to continue? (Y/N): "
+
+if /i not "%CONFIRM%"=="Y" (
+    echo.
+    echo Operation cancelled.
+    echo.
+    pause
+    goto MENU
+)
 
 echo.
-echo Pulling changes for branch: %PULL_BRANCH%
-git pull origin %PULL_BRANCH%
+echo Fetching latest changes from origin...
+git fetch origin
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to fetch from remote!
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Discarding all local changes...
+git reset --hard origin/%PULL_BRANCH%
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to reset to remote branch!
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Cleaning untracked files...
+git clean -fd
 
 if %ERRORLEVEL% EQU 0 (
     echo.
     echo ========================================
-    echo Pull completed successfully!
+    echo Repository synced successfully!
     echo ========================================
+    echo.
+    echo Your working directory now matches: origin/%PULL_BRANCH%
+    echo All local changes have been discarded.
     echo.
     echo Reloading build menu with latest changes...
     timeout /t 2 >nul
@@ -94,7 +131,7 @@ if %ERRORLEVEL% EQU 0 (
 ) else (
     echo.
     echo ========================================
-    echo Pull failed! Check errors above.
+    echo Sync completed with warnings.
     echo ========================================
     echo.
     pause
