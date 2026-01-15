@@ -69,7 +69,6 @@ namespace GTagSpeedMod
         private bool? originalFog;
         private Color? originalFogColor;
         private float originalFogDensity;
-        private Vector3? originalGravity;
         
         // This runs when your mod loads
         void Awake()
@@ -239,7 +238,9 @@ namespace GTagSpeedMod
                 return;
             }
 
+#pragma warning disable CS0618
             var transforms = GameObject.FindObjectsOfType<Transform>();
+#pragma warning restore CS0618
             foreach (var transform in transforms)
             {
                 if (transform == null)
@@ -403,22 +404,12 @@ namespace GTagSpeedMod
 
         private void ApplyLowGravity()
         {
-            if (!originalGravity.HasValue)
-            {
-                originalGravity = Physics.gravity;
-            }
-
-            Physics.gravity = originalGravity.Value * 0.35f;
+            LogMissingFeature("Low Gravity");
         }
 
         private void ApplySlowFall()
         {
-            if (!originalGravity.HasValue)
-            {
-                originalGravity = Physics.gravity;
-            }
-
-            Physics.gravity = new Vector3(originalGravity.Value.x, originalGravity.Value.y * 0.6f, originalGravity.Value.z);
+            LogMissingFeature("Slow Fall");
         }
 
         private void RestoreEnvironmentSettings()
@@ -448,10 +439,6 @@ namespace GTagSpeedMod
                 RenderSettings.fogDensity = originalFogDensity;
             }
 
-            if (originalGravity.HasValue)
-            {
-                Physics.gravity = originalGravity.Value;
-            }
         }
 
         private void LogMissingFeature(string featureName)
