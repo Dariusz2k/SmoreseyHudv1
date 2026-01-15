@@ -26,6 +26,42 @@ namespace GTagSpeedMod
 
         private readonly MenuOption[] options =
         {
+            // Tag Features
+            new MenuOption("Tag Self", "Tag yourself"),
+            new MenuOption("Untag Self", "Remove tag from self"),
+            new MenuOption("Anti Tag", "Prevent being tagged"),
+            new MenuOption("Tag All", "Tag all players"),
+            new MenuOption("Untag All", "Untag all players"),
+            new MenuOption("Tag Aura", "Auto-tag nearby players"),
+            new MenuOption("Tag Reach", "Extended tag reach"),
+            new MenuOption("Tag Gun", "Gun-based tagging"),
+            new MenuOption("Tag Bot", "Automated tagging"),
+            new MenuOption("Instant Tag Gun", "Instant gun tagging"),
+
+            // Advanced Tag
+            new MenuOption("Spam Tag Self", "Rapid tag toggle self"),
+            new MenuOption("Spam Tag Gun", "Rapid gun tag toggle"),
+            new MenuOption("Spam Tag All", "Rapid tag all toggle"),
+            new MenuOption("Tag Lag Gun", "Tag lag gun"),
+            new MenuOption("Give Tag Lag Gun", "Give invincibility gun"),
+            new MenuOption("Untag Gun", "Gun to untag players"),
+            new MenuOption("Flick Tag Gun", "Flick-based tag gun"),
+            new MenuOption("Report Anti Tag", "Anti-tag via serialization"),
+
+            // Paintbrawl
+            new MenuOption("PB Start Game", "Start paintbrawl"),
+            new MenuOption("PB End Game", "End paintbrawl"),
+            new MenuOption("PB Restart Game", "Restart paintbrawl"),
+            new MenuOption("PB Balloon Spam", "Spam balloon health"),
+            new MenuOption("PB Kill Gun", "Kill player with gun"),
+            new MenuOption("PB Kill Self", "Kill yourself"),
+            new MenuOption("PB Kill All", "Kill all players"),
+            new MenuOption("PB Revive Gun", "Revive with gun"),
+            new MenuOption("PB Revive All", "Revive all players"),
+            new MenuOption("PB God Mode", "Invincibility in PB"),
+            new MenuOption("PB No Delay", "Remove hit cooldowns"),
+
+            // Movement
             new MenuOption("Speed Boost", "Boost movement speed"),
             new MenuOption("Fly", "Toggle flight mode"),
             new MenuOption("No Clip", "Disable collisions"),
@@ -33,19 +69,19 @@ namespace GTagSpeedMod
             new MenuOption("High Jump", "Jump higher"),
             new MenuOption("Low Gravity", "Reduce gravity"),
             new MenuOption("Wall Walk", "Stick to walls"),
-            new MenuOption("ESP", "Show player outlines"),
-            new MenuOption("Tag Aura", "Auto-tag nearby players"),
-            new MenuOption("Anti Tag", "Avoid getting tagged"),
-            new MenuOption("Platforms", "Spawn temporary platforms"),
-            new MenuOption("Chams", "Colorize player models"),
-            new MenuOption("Teleport", "Teleport to look position"),
-            new MenuOption("Speed Lines", "Visual speed effect"),
-            new MenuOption("Night Mode", "Darken scene lighting"),
-            new MenuOption("Name Spoof", "Spoof player name"),
-            new MenuOption("Random Colors", "Cycle player colors"),
             new MenuOption("Slow Fall", "Reduce fall speed"),
-            new MenuOption("Spin Bots", "Spin player model"),
-            new MenuOption("FOV Boost", "Increase camera field of view")
+            new MenuOption("Platforms", "Spawn platforms"),
+            new MenuOption("Teleport", "Teleport to look pos"),
+
+            // Visual
+            new MenuOption("ESP", "Show player outlines"),
+            new MenuOption("Chams", "Colorize players"),
+            new MenuOption("Speed Lines", "Visual speed effect"),
+            new MenuOption("Night Mode", "Darken lighting"),
+            new MenuOption("Random Colors", "Cycle colors"),
+            new MenuOption("FOV Boost", "Increase FOV"),
+            new MenuOption("Name Spoof", "Change display name"),
+            new MenuOption("Spin Bots", "Spin player model")
         };
 
         private float speedMultiplier = 2.0f;
@@ -435,6 +471,100 @@ namespace GTagSpeedMod
 
             switch (option.Name)
             {
+                // Tag Features
+                case "Tag Self":
+                    Advantages.TagSelf();
+                    break;
+                case "Untag Self":
+                    Advantages.UntagSelf();
+                    break;
+                case "Anti Tag":
+                    Advantages.AntiTag();
+                    break;
+                case "Tag All":
+                    Advantages.TagAll();
+                    break;
+                case "Untag All":
+                    Advantages.UntagAll();
+                    break;
+                case "Tag Aura":
+                    Advantages.TagAura();
+                    break;
+                case "Tag Reach":
+                    Advantages.TagReach();
+                    break;
+                case "Tag Gun":
+                    Advantages.TagGun();
+                    break;
+                case "Tag Bot":
+                    Advantages.TagBot();
+                    break;
+                case "Instant Tag Gun":
+                    Advantages.InstantTagGun();
+                    break;
+
+                // Advanced Tag
+                case "Spam Tag Self":
+                    Advantages.SpamTagSelf();
+                    break;
+                case "Spam Tag Gun":
+                    Advantages.SpamTagGun();
+                    break;
+                case "Spam Tag All":
+                    Advantages.SpamTagAll();
+                    break;
+                case "Tag Lag Gun":
+                    Advantages.TagLagGun();
+                    break;
+                case "Give Tag Lag Gun":
+                    Advantages.GiveTagLagGun();
+                    break;
+                case "Untag Gun":
+                    Advantages.UntagGun();
+                    break;
+                case "Flick Tag Gun":
+                    Advantages.FlickTagGun();
+                    break;
+                case "Report Anti Tag":
+                    Advantages.ReportAntiTag();
+                    break;
+
+                // Paintbrawl
+                case "PB Start Game":
+                    Advantages.PaintbrawlStartGame();
+                    break;
+                case "PB End Game":
+                    Advantages.PaintbrawlEndGame();
+                    break;
+                case "PB Restart Game":
+                    Advantages.PaintbrawlRestartGame();
+                    break;
+                case "PB Balloon Spam":
+                    Advantages.PaintbrawlBalloonSpam();
+                    break;
+                case "PB Kill Gun":
+                    Advantages.PaintbrawlKillGun();
+                    break;
+                case "PB Kill Self":
+                    Advantages.PaintbrawlKillSelf();
+                    break;
+                case "PB Kill All":
+                    Advantages.PaintbrawlKillAll();
+                    break;
+                case "PB Revive Gun":
+                    Advantages.PaintbrawlReviveGun();
+                    break;
+                case "PB Revive All":
+                    Advantages.PaintbrawlReviveAll();
+                    break;
+                case "PB God Mode":
+                    Advantages.PaintbrawlGodMode();
+                    break;
+                case "PB No Delay":
+                    Advantages.PaintbrawlNoDelay();
+                    break;
+
+                // Movement
                 case "Speed Boost":
                     Movement.SpeedBoost(speedMultiplier);
                     break;
@@ -445,34 +575,33 @@ namespace GTagSpeedMod
                     Movement.NoClip();
                     break;
                 case "Long Arms":
-                    Movement.LongArms(2.0f); // You can adjust this value
+                    Movement.LongArms(2.0f);
                     break;
                 case "High Jump":
-                    Movement.HighJump(2.0f); // You can adjust this value
+                    Movement.HighJump(2.0f);
                     break;
                 case "Low Gravity":
-                    Movement.LowGravity(0.5f); // You can adjust this value
+                    Movement.LowGravity(0.5f);
                     break;
                 case "Wall Walk":
                     Movement.WallWalk();
                     break;
-                case "ESP":
-                    Movement.ESP();
-                    break;
-                case "Tag Aura":
-                    Advantages.TagAura();
-                    break;
-                case "Anti Tag":
-                    Advantages.AntiTag();
+                case "Slow Fall":
+                    Movement.SlowFall(0.5f);
                     break;
                 case "Platforms":
                     Movement.Platforms();
                     break;
-                case "Chams":
-                    Movement.Chams();
-                    break;
                 case "Teleport":
                     Movement.Teleport();
+                    break;
+
+                // Visual
+                case "ESP":
+                    Movement.ESP();
+                    break;
+                case "Chams":
+                    Movement.Chams();
                     break;
                 case "Speed Lines":
                     Movement.SpeedLines();
@@ -480,20 +609,17 @@ namespace GTagSpeedMod
                 case "Night Mode":
                     Movement.NightMode();
                     break;
-                case "Name Spoof":
-                    Movement.NameSpoof("YourNameHere"); // You can customize this
-                    break;
                 case "Random Colors":
                     Movement.RandomColors();
                     break;
-                case "Slow Fall":
-                    Movement.SlowFall(0.5f); // You can adjust this value
+                case "FOV Boost":
+                    Movement.FOVBoost(90f);
+                    break;
+                case "Name Spoof":
+                    Movement.NameSpoof("YourNameHere");
                     break;
                 case "Spin Bots":
-                    Movement.SpinBot(360f); // Degrees per second
-                    break;
-                case "FOV Boost":
-                    Movement.FOVBoost(90f); // You can adjust this value
+                    Movement.SpinBot(360f);
                     break;
                 default:
                     LogMissingFeature(option.Name);

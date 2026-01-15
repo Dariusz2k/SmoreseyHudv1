@@ -655,5 +655,193 @@ namespace GTagSpeedMod.Mods
         {
             Debug.LogError($"[Advantages] {message}");
         }
+
+        // === Additional Tag Features ===
+
+        /// <summary>
+        /// Remove tag from all players
+        /// </summary>
+        public static void UntagAll()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Automatically tag players within range (bot mode)
+        /// </summary>
+        public static void TagBot()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Instantly tag players using gun
+        /// </summary>
+        public static void InstantTagGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Rapidly tag self repeatedly
+        /// </summary>
+        public static void SpamTagSelf()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Rapidly tag using gun
+        /// </summary>
+        public static void SpamTagGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Rapidly tag all players
+        /// </summary>
+        public static void SpamTagAll()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Tag gun with lag effect
+        /// </summary>
+        public static void TagLagGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Give tag lag gun to another player
+        /// </summary>
+        public static void GiveTagLagGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Gun that removes tag from players
+        /// </summary>
+        public static void UntagGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Quick flick tag using gun
+        /// </summary>
+        public static void FlickTagGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Report when anti-tag is detected
+        /// </summary>
+        public static void ReportAntiTag()
+        {
+            // YOUR CODE HERE
+        }
+
+        // === Paintbrawl Features ===
+
+        /// <summary>
+        /// Start paintbrawl game
+        /// </summary>
+        public static void PaintbrawlStartGame()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// End paintbrawl game
+        /// </summary>
+        public static void PaintbrawlEndGame()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Restart paintbrawl game
+        /// </summary>
+        public static void PaintbrawlRestartGame()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Spam balloons in paintbrawl
+        /// </summary>
+        public static void PaintbrawlBalloonSpam()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Kill gun in paintbrawl
+        /// </summary>
+        public static void PaintbrawlKillGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Kill self in paintbrawl
+        /// </summary>
+        public static void PaintbrawlKillSelf()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Kill all players in paintbrawl
+        /// </summary>
+        public static void PaintbrawlKillAll()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Revive gun in paintbrawl
+        /// </summary>
+        public static void PaintbrawlReviveGun()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Revive all players in paintbrawl
+        /// </summary>
+        public static void PaintbrawlReviveAll()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Enable god mode in paintbrawl
+        /// </summary>
+        public static void PaintbrawlGodMode()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Remove delay in paintbrawl
+        /// </summary>
+        public static void PaintbrawlNoDelay()
+        {
+            // YOUR CODE HERE
+        }
+
+        /// <summary>
+        /// Disable no delay in paintbrawl
+        /// </summary>
+        public static void DisablePaintbrawlNoDelay()
+        {
+            // YOUR CODE HERE
+        }
     }
 }
