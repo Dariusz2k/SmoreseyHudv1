@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" Version="6.0.0-be.1" />
-    <PackageReference Include="0Harmony" Version="2.2.2" />
+    <PackageReference Include="HarmonyLib" Version="2.2.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SpeedModPlugin.cs" />

@@ -24,7 +24,7 @@ This guide will help you set up your development environment for building GTag m
 ### BepInEx Assemblies (NuGet)
 These are restored via NuGet (BepInEx dev feed):
 - `BepInEx.Core` `6.0.0-be.1` - dev build from the BepInEx feed
-- `0Harmony` - Harmony patching library (nuget.org)
+- `HarmonyLib` - Harmony patching library (nuget.org)
 
 ### Unity Assemblies
 These must be extracted from your Gorilla Tag installation:
