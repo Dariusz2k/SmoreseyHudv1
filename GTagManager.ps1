@@ -9,7 +9,7 @@ $projectPath = Split-Path -Parent $PSScriptRoot
 if (-not $projectPath) { $projectPath = "D:\ProgrammingStuff\GTagMenu" }
 $libsPath = Join-Path $projectPath "libs"
 $tempPath = Join-Path $projectPath "temp"
-$modDllPath = Join-Path $projectPath "GTagSpeedMod\bin\Release\GTagSpeedMod.dll"
+$modDllPath = Join-Path $projectPath "GTagSpeedMod\bin\Release\net472\GTagSpeedMod.dll"
 $modName = "GTagSpeedMod.dll"
 
 # Create the main form with STYLE
