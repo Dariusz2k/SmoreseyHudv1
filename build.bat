@@ -59,20 +59,55 @@ if not defined CURRENT_BRANCH (
     goto MENU
 )
 
-set "PULL_BRANCH="
-
-if exist "build.config" (
-    for /f "usebackq tokens=1,* delims==" %%a in ("build.config") do (
-        if /i "%%a"=="PULL_BRANCH" set "PULL_BRANCH=%%b"
-    )
-)
-
-if not defined PULL_BRANCH (
-    set "PULL_BRANCH=%CURRENT_BRANCH%"
-)
-
 echo Current branch: %CURRENT_BRANCH%
-echo Configured pull branch: %PULL_BRANCH%
+echo.
+echo Select update method:
+echo.
+echo 1. Normal Pull (merge with current branch)
+echo 2. Hard Reset (discard ALL local changes and overwrite)
+echo 3. Select Different Branch
+echo 4. Cancel
+echo.
+set /p PULL_CHOICE="Enter your choice (1-4): "
+
+if "%PULL_CHOICE%"=="1" goto NORMAL_PULL
+if "%PULL_CHOICE%"=="2" goto HARD_RESET
+if "%PULL_CHOICE%"=="3" goto SELECT_BRANCH
+if "%PULL_CHOICE%"=="4" goto MENU
+echo Invalid choice!
+timeout /t 2 >nul
+goto PULL_CODE
+
+:NORMAL_PULL
+echo.
+echo Fetching latest changes...
+git fetch origin
+
+echo.
+echo Pulling changes for branch: %CURRENT_BRANCH%
+git pull origin %CURRENT_BRANCH%
+
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo ========================================
+    echo Pull completed successfully!
+    echo ========================================
+    echo.
+    echo Reloading build menu with latest changes...
+    timeout /t 2 >nul
+    call "%~f0"
+    exit /b
+) else (
+    echo.
+    echo ========================================
+    echo Pull failed! Check errors above.
+    echo ========================================
+    echo.
+    pause
+    goto MENU
+)
+
+:HARD_RESET
 echo.
 echo WARNING: This will discard ALL local changes!
 echo Your working directory will be reset to match the remote branch.
@@ -101,7 +136,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo.
 echo Discarding all local changes...
-git reset --hard origin/%PULL_BRANCH%
+git reset --hard origin/%CURRENT_BRANCH%
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
@@ -115,14 +150,62 @@ echo.
 echo Cleaning untracked files...
 git clean -fd
 
+echo.
+echo ========================================
+echo Repository synced successfully!
+echo ========================================
+echo.
+echo Your working directory now matches: origin/%CURRENT_BRANCH%
+echo All local changes have been discarded.
+echo.
+echo Reloading build menu with latest changes...
+timeout /t 2 >nul
+call "%~f0"
+exit /b
+
+:SELECT_BRANCH
+echo.
+echo Fetching branch list...
+git fetch origin
+
+echo.
+echo Available remote branches:
+git branch -r
+
+echo.
+set /p NEW_BRANCH="Enter branch name (e.g., main, claude/branch-name): "
+
+if not defined NEW_BRANCH (
+    echo.
+    echo No branch specified.
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Checking out branch: %NEW_BRANCH%
+git checkout %NEW_BRANCH%
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to checkout branch!
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Pulling latest changes...
+git pull origin %NEW_BRANCH%
+
 if %ERRORLEVEL% EQU 0 (
     echo.
     echo ========================================
-    echo Repository synced successfully!
+    echo Branch switched successfully!
     echo ========================================
     echo.
-    echo Your working directory now matches: origin/%PULL_BRANCH%
-    echo All local changes have been discarded.
+    echo You are now on: %NEW_BRANCH%
     echo.
     echo Reloading build menu with latest changes...
     timeout /t 2 >nul
@@ -131,7 +214,7 @@ if %ERRORLEVEL% EQU 0 (
 ) else (
     echo.
     echo ========================================
-    echo Sync completed with warnings.
+    echo Branch switch completed with warnings.
     echo ========================================
     echo.
     pause
@@ -303,39 +386,6 @@ if %MISSING_DEPS% EQU 1 (
 )
 
 echo All required DLLs found.
-echo.
-
-REM Verify BepInEx.dll contains required types
-echo Verifying BepInEx.dll integrity...
-powershell.exe -ExecutionPolicy Bypass -Command "try { $dllPath = (Resolve-Path 'libs\BepInEx.dll').Path; Write-Host \"Loading: $dllPath\" -ForegroundColor Cyan; $assembly = [System.Reflection.Assembly]::LoadFrom($dllPath); $version = $assembly.GetName().Version; Write-Host \"Version: $version\" -ForegroundColor Cyan; try { $baseUnityPlugin = $assembly.GetType('BepInEx.BaseUnityPlugin'); if (-not $baseUnityPlugin) { Write-Host '[ERROR] BepInEx.dll does not contain BepInEx.BaseUnityPlugin!' -ForegroundColor Red; exit 1 } else { Write-Host '[OK] BepInEx.dll verified - BaseUnityPlugin found' -ForegroundColor Green; Write-Host \"Full type name: $($baseUnityPlugin.FullName)\" -ForegroundColor Cyan; exit 0 } } catch { Write-Host '[WARNING] Could not verify BaseUnityPlugin, but DLL version looks correct' -ForegroundColor Yellow; Write-Host 'Proceeding with build - MSBuild will do final validation' -ForegroundColor Yellow; exit 0 } } catch { Write-Host \"[ERROR] Failed to load BepInEx.dll: $($_.Exception.Message)\" -ForegroundColor Red; exit 1 }"
-
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo ========================================
-    echo ERROR: Invalid BepInEx.dll!
-    echo ========================================
-    echo.
-    echo Your BepInEx.dll does not contain the required BaseUnityPlugin type.
-    echo This usually means you have the wrong version of BepInEx.
-    echo.
-    echo Required: BepInEx 5.4.x for IL2CPP or Mono
-    echo.
-    echo Would you like to run the GTag Manager to extract the correct DLLs?
-    echo.
-    set /p RUN_MANAGER="Run GTag Manager now? (Y/N): "
-
-    if /i "%RUN_MANAGER%"=="Y" (
-        goto LAUNCH_MANAGER
-    ) else (
-        echo.
-        echo Please use Option 3 to launch GTag Manager and extract DLLs.
-        echo Or use Option 5 to extract Unity DLLs from Gorilla Tag.
-        echo.
-        pause
-        goto MENU
-    )
-)
-
 echo.
 
 REM Build the project
