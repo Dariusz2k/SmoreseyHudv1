@@ -5,7 +5,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$projectPath = Split-Path -Parent $PSScriptRoot
+$projectPath = $PSScriptRoot
 if (-not $projectPath) { $projectPath = "D:\ProgrammingStuff\GTagMenu" }
 $libsPath = Join-Path $projectPath "libs"
 $tempPath = Join-Path $projectPath "temp"
@@ -63,7 +63,7 @@ $form.Controls.Add($step1Panel)
 $step1Label = New-Object System.Windows.Forms.Label
 $step1Label.Location = New-Object System.Drawing.Point(10,5)
 $step1Label.Size = New-Object System.Drawing.Size(690,30)
-$step1Label.Text = '[STEP 1] Locate Gorilla Tag'
+$step1Label.Text = '[ ] [STEP 1] Locate Gorilla Tag'
 $step1Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step1Label.ForeColor = [System.Drawing.Color]::FromArgb(0,255,255)  # Cyan
 $step1Panel.Controls.Add($step1Label)
@@ -119,7 +119,7 @@ $form.Controls.Add($step2Panel)
 $step2Label = New-Object System.Windows.Forms.Label
 $step2Label.Location = New-Object System.Drawing.Point(10,5)
 $step2Label.Size = New-Object System.Drawing.Size(690,30)
-$step2Label.Text = '[STEP 2] BepInEx Setup'
+$step2Label.Text = '[ ] [STEP 2] BepInEx Setup'
 $step2Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step2Label.ForeColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Orange
 $step2Panel.Controls.Add($step2Label)
@@ -193,7 +193,7 @@ $form.Controls.Add($step3Panel)
 $step3Label = New-Object System.Windows.Forms.Label
 $step3Label.Location = New-Object System.Drawing.Point(10,5)
 $step3Label.Size = New-Object System.Drawing.Size(690,30)
-$step3Label.Text = '[STEP 3] Mod Deployment'
+$step3Label.Text = '[ ] [STEP 3] Mod Deployment'
 $step3Label.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
 $step3Label.ForeColor = [System.Drawing.Color]::FromArgb(50,205,50)  # Lime Green
 $step3Panel.Controls.Add($step3Label)
@@ -298,8 +298,31 @@ function WriteStatus {
     $form.Refresh()
 }
 
+function GetIsValidGtagPath {
+    $gtagPath = $gtagTextBox.Text
+    $gtagExePath = Join-Path $gtagPath "GorillaTag.exe"
+    $dataPathA = Join-Path $gtagPath "GorillaTag_Data"
+    $dataPathB = Join-Path $gtagPath "Gorilla Tag_Data"
+    return (Test-Path $gtagPath) -and ((Test-Path $gtagExePath) -or (Test-Path $dataPathA) -or (Test-Path $dataPathB))
+}
+
+function SetStepStatus {
+    param(
+        [System.Windows.Forms.Label]$label,
+        [bool]$isComplete,
+        [string]$stepText
+    )
+
+    if ($isComplete) {
+        $label.Text = "[X] $stepText"
+    } else {
+        $label.Text = "[ ] $stepText"
+    }
+}
+
 function CheckModStatus {
     $gtagPath = $gtagTextBox.Text
+    $isInstalled = $false
 
     # Check if mod DLL exists in project
     $modExists = Test-Path $modDllPath
@@ -314,11 +337,11 @@ function CheckModStatus {
     }
 
     # Check if mod is installed in game
-    if (-not (Test-Path $gtagPath)) {
+    if (-not (GetIsValidGtagPath)) {
         $modStatusLabel.Text = "[X] Mod Status: Invalid Game Path"
         $modStatusLabel.ForeColor = [System.Drawing.Color]::Gray
         $unloadModButton.Enabled = $false
-        return
+        return $false
     }
 
     $pluginsPath = Join-Path $gtagPath "BepInEx\plugins"
@@ -330,6 +353,7 @@ function CheckModStatus {
         $modStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(50,255,50)
         $modLocationLabel.Text = "Installed: $($installedInfo.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss'))"
         $unloadModButton.Enabled = $true
+        $isInstalled = $true
 
         # Check if installed version matches built version
         if ($modExists) {
@@ -350,12 +374,14 @@ function CheckModStatus {
         }
         $unloadModButton.Enabled = $false
     }
+
+    return $isInstalled
 }
 
 function CheckBepInExStatus {
     $gtagPath = $gtagTextBox.Text
 
-    if (-not (Test-Path $gtagPath)) {
+    if (-not (GetIsValidGtagPath)) {
         $bepinexStatusLabel.Text = "[X] BepInEx: Invalid Game Path"
         $bepinexStatusLabel.ForeColor = [System.Drawing.Color]::Red
         return $false
@@ -381,8 +407,13 @@ function CheckBepInExStatus {
 
 function CheckAllStatus {
     WriteStatus "Checking all statuses..."
-    CheckBepInExStatus
-    CheckModStatus
+    $bepInExReady = CheckBepInExStatus
+    $modInstalled = CheckModStatus
+    $isValidPath = GetIsValidGtagPath
+
+    SetStepStatus -label $step1Label -isComplete $isValidPath -stepText "[STEP 1] Locate Gorilla Tag"
+    SetStepStatus -label $step2Label -isComplete $bepInExReady -stepText "[STEP 2] BepInEx Setup"
+    SetStepStatus -label $step3Label -isComplete $modInstalled -stepText "[STEP 3] Mod Deployment"
     WriteStatus "Status check complete!"
 }
 
@@ -433,12 +464,36 @@ function InstallMod {
         WriteStatus "Location: $installedModPath"
         WriteStatus "================================================"
         WriteStatus ""
-        WriteStatus ">> READY TO PLAY! Launch Gorilla Tag and press F1 in-game"
+        WriteStatus ">> READY TO PLAY! Launch Gorilla Tag and press Y/B (or F1) in-game"
 
         CheckModStatus
 
+        $menuOptions = @(
+            "Speed Boost",
+            "Fly",
+            "No Clip",
+            "Long Arms",
+            "High Jump",
+            "Low Gravity",
+            "Wall Walk",
+            "ESP",
+            "Tag Aura",
+            "Anti Tag",
+            "Platforms",
+            "Chams",
+            "Teleport",
+            "Speed Lines",
+            "Night Mode",
+            "Name Spoof",
+            "Random Colors",
+            "Slow Fall",
+            "Spin Bots",
+            "FOV Boost"
+        )
+        $menuOptionsText = ($menuOptions | ForEach-Object { " - $_" }) -join "`n"
+
         [System.Windows.Forms.MessageBox]::Show(
-            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress F1 in-game to open the mod menu.",
+            "*** MOD INSTALLED SUCCESSFULLY! ***`n`nYour mod is now active in Gorilla Tag!`n`nPress Y/B (or F1) in-game to open the mod menu.`n`nAvailable options:`n$menuOptionsText",
             "Installation Complete",
             'OK',
             'Information'
