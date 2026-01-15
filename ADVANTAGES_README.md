@@ -115,13 +115,13 @@ GTagSpeedMod/
 - `UnityEngine.dll` - Core Unity engine
 - `UnityEngine.CoreModule.dll` - Core Unity types
 - `UnityEngine.IMGUIModule.dll` - GUI rendering
+- `UnityEngine.InputLegacyModule.dll` - Input system (keyboard, mouse, controller)
 - `UnityEngine.UI.dll` - UI system
 - `Assembly-CSharp.dll` - Gorilla Tag game code
 
 ### References NOT Required (removed to fix build):
 - ~~`UnityEngine.PhysicsModule`~~ - Not available, gun system uses simplified targeting
 - ~~`UnityEngine.TextRenderingModule`~~ - Not needed, IMGUI types used instead
-- ~~`UnityEngine.InputLegacyModule`~~ - Not available in standard libs folder
 
 ### Added Namespaces:
 - `GTagSpeedMod.Mods`
