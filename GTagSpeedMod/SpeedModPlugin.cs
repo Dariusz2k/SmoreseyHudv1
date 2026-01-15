@@ -72,7 +72,9 @@ namespace GTagSpeedMod
         private float originalFogDensity;
         private bool hasLoggedOnGUI;
         private bool hasLoggedHandMenuAttempt;
-        
+        private bool hasLoggedUpdate;
+        private float lastInputDebugTime;
+
         // This runs when your mod loads
         void Awake()
         {
@@ -108,12 +110,26 @@ namespace GTagSpeedMod
         // This runs every frame
         void Update()
         {
+            // Log once that Update is being called
+            if (!hasLoggedUpdate)
+            {
+                Logger.LogInfo("[Update] Update() is being called - mod is active");
+                hasLoggedUpdate = true;
+            }
+
             // Press Y/B (or F1 as fallback) to toggle the menu
             if (IsMenuTogglePressed())
             {
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
                 LogDebugState("Menu toggle pressed");
+            }
+
+            // Debug: Log input state every 5 seconds to help troubleshoot
+            if (Time.time >= lastInputDebugTime + 5f)
+            {
+                DebugInputState();
+                lastInputDebugTime = Time.time;
             }
 
             if (handAnchor == null && Time.time >= nextHandSearchTime)
@@ -531,25 +547,64 @@ namespace GTagSpeedMod
             Logger.LogInfo($"[Debug] =====================================");
         }
 
+        private void DebugInputState()
+        {
+            Logger.LogInfo("[Input] === Input Debug ===");
+            Logger.LogInfo($"[Input] F1 key: {Input.GetKey(KeyCode.F1)}");
+            Logger.LogInfo($"[Input] Y key: {Input.GetKey(KeyCode.Y)}");
+            Logger.LogInfo($"[Input] B key: {Input.GetKey(KeyCode.B)}");
+            Logger.LogInfo($"[Input] Joystick buttons detected: {Input.GetJoystickNames().Length} controllers");
+
+            if (inputPollerType != null && inputPollerInstance != null)
+            {
+                Logger.LogInfo($"[Input] InputPoller found: {inputPollerType.Name}");
+                Logger.LogInfo($"[Input]   rightControllerPrimaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")}");
+                Logger.LogInfo($"[Input]   rightControllerSecondaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")}");
+                Logger.LogInfo($"[Input]   leftControllerPrimaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")}");
+                Logger.LogInfo($"[Input]   leftControllerSecondaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton")}");
+            }
+            else
+            {
+                Logger.LogInfo("[Input] InputPoller NOT found - will search for ControllerInputPoller");
+            }
+
+            Logger.LogInfo($"[Input] Current menu state: {(showMenu ? "VISIBLE" : "HIDDEN")}");
+            Logger.LogInfo("[Input] === Press Y/B button on controller or F1 on keyboard to toggle ===");
+        }
+
         private bool IsMenuTogglePressed()
         {
-            if (Input.GetKeyDown(KeyCode.F1)
-                || Input.GetKeyDown(KeyCode.Y)
-                || Input.GetKeyDown(KeyCode.B)
-                || Input.GetKeyDown(KeyCode.JoystickButton3)
-                || Input.GetKeyDown(KeyCode.JoystickButton1)
-                || Input.GetKeyDown(KeyCode.JoystickButton2)
-                || Input.GetKeyDown(KeyCode.JoystickButton0)
-                || Input.GetKeyDown(KeyCode.JoystickButton4)
-                || Input.GetKeyDown(KeyCode.JoystickButton5)
-                || Input.GetKeyDown(KeyCode.JoystickButton6)
-                || Input.GetKeyDown(KeyCode.JoystickButton7)
-                || Input.GetKeyDown(KeyCode.JoystickButton8)
-                || Input.GetKeyDown(KeyCode.JoystickButton9))
+            // Check keyboard inputs
+            if (Input.GetKeyDown(KeyCode.F1))
             {
+                Logger.LogInfo("[Input] Menu toggle detected: F1 key");
                 return true;
             }
 
+            if (Input.GetKeyDown(KeyCode.Y))
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Y key");
+                return true;
+            }
+
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: B key");
+                return true;
+            }
+
+            // Check joystick buttons
+            for (int i = 0; i <= 9; i++)
+            {
+                var keyCode = (KeyCode)((int)KeyCode.JoystickButton0 + i);
+                if (Input.GetKeyDown(keyCode))
+                {
+                    Logger.LogInfo($"[Input] Menu toggle detected: JoystickButton{i}");
+                    return true;
+                }
+            }
+
+            // Refresh InputPoller cache periodically
             if (Time.time >= nextInputPollerRefreshTime)
             {
                 CacheInputPoller();
@@ -561,14 +616,36 @@ namespace GTagSpeedMod
                 return false;
             }
 
-            return GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton");
+            // Check ControllerInputPoller buttons
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown"))
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Right Controller Primary Button (Y)");
+                return true;
+            }
+
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown"))
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Right Controller Secondary Button (B)");
+                return true;
+            }
+
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown"))
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Left Controller Primary Button (X)");
+                return true;
+            }
+
+            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton")
+                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown"))
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Left Controller Secondary Button (A)");
+                return true;
+            }
+
+            return false;
         }
 
         private void CacheInputPoller()
