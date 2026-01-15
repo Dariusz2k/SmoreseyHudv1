@@ -10,14 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- BepInEx 5.x package reference -->
-    <PackageReference Include="BepInEx.Core" Version="5.4.23.2" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-    <PackageReference Include="UnityEngine.Modules" Version="2021.3.29" />
+    <!-- BepInEx 6 NuGet packages - use pre-release version -->
+    <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-pre.2" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Unity DLLs from libs folder (for Gorilla Tag specific references) -->
+    <!-- Unity DLLs from libs folder (for game-specific references) -->
     <Reference Include="UnityEngine">
       <HintPath>..\libs\UnityEngine.dll</HintPath>
       <Private>False</Private>

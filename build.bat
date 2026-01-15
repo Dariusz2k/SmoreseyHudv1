@@ -115,33 +115,10 @@ if %ERRORLEVEL% NEQ 0 (
 REM Display .NET SDK version
 for /f "tokens=*" %%v in ('dotnet --version 2^>nul') do set DOTNET_VERSION=%%v
 echo Found .NET SDK version: %DOTNET_VERSION%
+echo Using BepInEx 6 with NuGet package management
 echo.
 
-REM Check if BepInEx templates are installed, if not install them
-echo Checking for BepInEx templates...
-dotnet new list | findstr /C:"bepinex5plugin" >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo BepInEx templates not found. Installing...
-    echo.
-    dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json
-
-    if %ERRORLEVEL% NEQ 0 (
-        echo.
-        echo WARNING: Failed to install BepInEx templates.
-        echo This is not critical as the project is already configured.
-        echo.
-    ) else (
-        echo.
-        echo BepInEx templates installed successfully!
-        echo.
-    )
-) else (
-    echo BepInEx templates are already installed.
-    echo.
-)
-echo.
-
-REM Validate libs folder and Unity DLLs (BepInEx will come from NuGet)
+REM Validate libs folder and Unity DLLs
 echo Checking for Unity dependencies...
 echo Current directory: %CD%
 echo.
@@ -154,16 +131,17 @@ if not exist "libs" (
     echo You need Unity DLLs from your Gorilla Tag installation.
     echo Use option 5 to extract Unity DLLs automatically.
     echo.
-    set /p CONTINUE="Continue anyway to download BepInEx packages? (Y/N): "
+    set /p CONTINUE="Continue anyway? BepInEx 6 will be downloaded from NuGet. (Y/N): "
     if /i not "%CONTINUE%"=="Y" (
         goto MENU
     )
+    echo.
 ) else (
     echo Found libs folder at: %CD%\libs
     echo.
 )
 
-REM Check for Unity dependencies (required for Gorilla Tag specific code)
+REM Check for Unity dependencies (required for game-specific references)
 set MISSING_UNITY=0
 
 if not exist "libs\UnityEngine.dll" (
@@ -204,8 +182,6 @@ if %MISSING_UNITY% EQU 1 (
     echo Unity DLLs are required for Gorilla Tag specific references.
     echo Use option 5 to extract Unity DLLs from Gorilla Tag.
     echo.
-    echo BepInEx and Harmony will be downloaded from NuGet automatically.
-    echo.
     set /p CONTINUE="Continue build anyway? (Y/N): "
 
     if /i not "%CONTINUE%"=="Y" (
@@ -213,11 +189,11 @@ if %MISSING_UNITY% EQU 1 (
     )
     echo.
 ) else (
-    echo All Unity DLLs found.
+    echo All Unity DLLs found!
     echo.
 )
 
-echo NOTE: BepInEx and Harmony will be automatically downloaded from NuGet.
+echo NOTE: Using BepInEx 6 - BepInEx and Harmony will be downloaded from NuGet automatically.
 echo.
 
 REM Build the project using dotnet build
