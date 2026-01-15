@@ -27,7 +27,7 @@ Write-Host "Install BepInEx plugin templates? (dotnet new install)" -ForegroundC
 Write-Host "This is required for creating new plugin projects." -ForegroundColor Yellow
 Write-Host ""
 set /p INSTALL_TEMPLATES="Install templates now? (Y/N): "
-if /i "$INSTALL_TEMPLATES" -eq "Y" {
+if ($INSTALL_TEMPLATES -match '^[Yy]') {
     Write-Host ""
     Write-Host "Installing templates..." -ForegroundColor Yellow
     dotnet new install $TemplatePackage --nuget-source $TemplateSource
