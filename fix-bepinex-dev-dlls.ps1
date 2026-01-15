@@ -2,6 +2,7 @@
 # Downloads the correct BepInEx 5.4.x development DLLs for compilation
 
 $ErrorActionPreference = "Stop"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "BepInEx Development DLL Installer" -ForegroundColor Cyan
@@ -22,7 +23,7 @@ function Get-BepInExAssetInfo {
 
     $releaseApiUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases/tags/$Tag"
     try {
-        $release = Invoke-RestMethod -Uri $releaseApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1" }
+        $release = Invoke-RestMethod -Uri $releaseApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1"; "Accept" = "application/vnd.github+json" }
     } catch {
         return $null
     }
@@ -43,7 +44,7 @@ function Get-BepInExAssetInfo {
 function Get-LatestBepInEx54AssetInfo {
     $releasesApiUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases"
     try {
-        $releases = Invoke-RestMethod -Uri $releasesApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1" }
+        $releases = Invoke-RestMethod -Uri $releasesApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1"; "Accept" = "application/vnd.github+json" }
     } catch {
         return $null
     }
@@ -108,7 +109,7 @@ Write-Host ""
 $zipPath = Join-Path $tempPath "BepInEx.zip"
 
 try {
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -Headers @{ "User-Agent" = "SmoreseyHudv1" }
     Write-Host "Download complete!" -ForegroundColor Green
     Write-Host ""
 } catch {

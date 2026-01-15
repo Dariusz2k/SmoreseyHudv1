@@ -90,6 +90,18 @@ try {
         Write-Host "  - $($_.Name)"
     }
     Write-Host ""
+    try {
+        $assembly = [System.Reflection.Assembly]::LoadFrom((Resolve-Path (Join-Path $LibsDir "BepInEx.dll")).Path)
+        if (-not $assembly.GetType("BepInEx.BaseUnityPlugin")) {
+            Write-Host "WARNING: BepInEx.BaseUnityPlugin not found in BepInEx.dll." -ForegroundColor Yellow
+            Write-Host "Run fix-bepinex-dev-dlls.ps1 to install the development DLLs." -ForegroundColor Yellow
+            Write-Host ""
+        }
+    } catch {
+        Write-Host "WARNING: Failed to verify BepInEx.dll contents." -ForegroundColor Yellow
+        Write-Host "Run verify-bepinex-dll.ps1 for details." -ForegroundColor Yellow
+        Write-Host ""
+    }
     Write-Host "Note: Unity DLLs should be extracted from your Gorilla Tag installation." -ForegroundColor Yellow
     Write-Host "You can use GTag Manager (option 3 in build.bat) for this." -ForegroundColor Yellow
     Write-Host ""

@@ -311,6 +311,16 @@ if not exist "libs\BepInEx.dll" (
     ) else if errorlevel 2 (
         echo [ERROR] BepInEx.BaseUnityPlugin not found in BepInEx.dll.
         echo         You need the 5.4.x DEVELOPMENT DLLs.
+        echo.
+        set /p FIX_DEVDLLS="Run fix-bepinex-dev-dlls.ps1 now? (Y/N): "
+        if /i "%FIX_DEVDLLS%"=="Y" (
+            echo.
+            echo Running BepInEx development DLL installer...
+            powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
+            echo.
+            echo Re-checking dependencies...
+            goto BUILD_MOD
+        )
         set MISSING_DEPS=1
     )
 )
