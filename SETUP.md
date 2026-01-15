@@ -9,9 +9,9 @@ This guide will help you set up your development environment for building GTag m
    build.bat
    ```
 
-2. **Install BepInEx development dependencies**
-   - Run `setup-bepinex.ps1` to download the required BepInEx 5.x *development* assemblies
-   - Includes: BepInEx.dll, 0Harmony.dll, Mono.Cecil.dll, MonoMod.RuntimeDetour.dll, MonoMod.Utils.dll
+2. **Restore NuGet packages**
+   - BepInEx is restored via NuGet using the `NuGet.config` source.
+   - `build.bat` runs MSBuild with restore automatically.
 
 3. **Extract Unity DLLs** (GTag Manager)
    - Use the GTag Manager to locate and extract Unity DLLs from Gorilla Tag
@@ -21,11 +21,10 @@ This guide will help you set up your development environment for building GTag m
 
 ## Required Dependencies
 
-### BepInEx Assemblies (Dev DLLs)
-These are automatically downloaded by the setup script (BepInEx 5.x dev build):
-- `BepInEx.dll` - Development assembly (contains `BepInEx.BaseUnityPlugin`)
-- `0Harmony.dll` - Harmony patching library
-- Additional support DLLs (Mono.Cecil, MonoMod, etc.)
+### BepInEx Assemblies (NuGet)
+These are restored via NuGet (BepInEx 5.x):
+- `BepInEx.Core` - Provides `BepInEx.BaseUnityPlugin`
+- `0Harmony` - Harmony patching library
 
 ### Unity Assemblies
 These must be extracted from your Gorilla Tag installation:
@@ -39,41 +38,27 @@ Optional, but useful for accessing game-specific code:
 
 ## Manual Setup
 
-If you prefer to set up dependencies manually:
+If you prefer to restore packages manually:
 
-### Option 1: Use the automated script
 ```powershell
-powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
+dotnet restore GTagSpeedMod\GTagSpeedMod.csproj
 ```
-
-### Option 2: Manual download
-1. Download the **DEV** BepInEx 5.x zip from [GitHub Releases](https://github.com/BepInEx/BepInEx/releases)
-2. Extract the archive
-3. Copy these files from `BepInEx/core/` to the `libs/` folder:
-   - BepInEx.dll (contains BaseUnityPlugin for BepInEx 5.x dev builds)
-   - 0Harmony.dll
-   - Other support DLLs as needed
-
-4. Copy Unity DLLs from your Gorilla Tag installation:
-   - Usually located at: `[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
-   - Copy the required DLLs to the `libs/` folder
 
 ## Troubleshooting
 
 ### Build Error: "BaseUnityPlugin could not be found"
-- **Cause**: The `libs/BepInEx.dll` is from a runtime/source build instead of the **dev** build.
-- **Solution**: Run `setup-bepinex.ps1` to install the BepInEx 5.x development DLLs.
-- **Note**: In BepInEx 5.x, `BaseUnityPlugin` lives in `BepInEx.dll` (BepInEx.Core.dll is a 6.x assembly).
+- **Cause**: NuGet packages were not restored.
+- **Solution**: Run `dotnet restore GTagSpeedMod\GTagSpeedMod.csproj`, then rebuild.
 
 ### Build Error: "UnityEngine could not be found"
 - **Cause**: Missing Unity DLLs
 - **Solution**: Use GTag Manager to extract Unity DLLs from Gorilla Tag
 
 ### BepInEx download fails
-- **Cause**: Network issues or GitHub rate limiting
+- **Cause**: Network issues or NuGet source access
 - **Solution**:
-  1. Download the **DEV** zip manually from [BepInEx Releases](https://github.com/BepInEx/BepInEx/releases/latest)
-  2. Extract and copy DLLs to `libs/` folder as described above
+  1. Ensure `NuGet.config` includes `https://nuget.bepinex.dev/v3/index.json`
+  2. Re-run `dotnet restore`
 
 ## Installing and Configuring BepInEx (Game Runtime)
 
@@ -108,11 +93,9 @@ You should then see templates such as:
 ```
 SmoreseyHudv1/
 ├── build.bat                 # Interactive build menu
-├── setup-bepinex.ps1        # BepInEx dependency installer
+├── setup-bepinex.ps1        # BepInEx template installer
 ├── GTagManager.ps1          # GUI tool for game setup
 ├── libs/                    # Dependencies folder
-│   ├── BepInEx.dll
-│   ├── 0Harmony.dll
 │   ├── UnityEngine.dll
 │   └── UnityEngine.CoreModule.dll
 └── GTagSpeedMod/            # Your mod source code

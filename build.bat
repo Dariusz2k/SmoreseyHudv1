@@ -278,7 +278,7 @@ if not exist "libs" (
     echo Please ensure the libs folder exists with required DLLs
     echo Expected location: %CD%\libs
     echo.
-    echo TIP: Use GTag Manager to extract Unity DLLs, and setup-bepinex.ps1 for BepInEx dev DLLs
+    echo TIP: Use GTag Manager to extract Unity DLLs from Gorilla Tag
     echo.
     pause
     goto MENU
@@ -289,37 +289,8 @@ echo Contents:
 dir /b libs\*.dll 2>nul
 echo.
 
-REM Check for BepInEx dependencies
+REM Check for Unity dependencies (BepInEx is restored via NuGet)
 set MISSING_DEPS=0
-set BEPINEX_BAD=0
-
-if not exist "libs\BepInEx.dll" (
-    echo [MISSING] BepInEx.dll
-    set MISSING_DEPS=1
-    set BEPINEX_BAD=1
-) else (
-    echo [OK] BepInEx.dll
-    powershell.exe -ExecutionPolicy Bypass -Command "try { $asm=[System.Reflection.Assembly]::LoadFrom((Resolve-Path 'libs\\BepInEx.dll').Path); if ($null -eq $asm.GetType('BepInEx.BaseUnityPlugin')) { exit 2 } } catch { exit 3 }"
-    if errorlevel 3 (
-        echo [ERROR] BepInEx.dll could not be loaded for verification.
-        echo         Try running verify-bepinex-dll.ps1 for details.
-        set MISSING_DEPS=1
-        set BEPINEX_BAD=1
-    ) else if errorlevel 2 (
-        echo [ERROR] BepInEx.dll in libs does not contain BepInEx.BaseUnityPlugin.
-        echo         This means you have runtime/source DLLs instead of the dev build.
-        echo         You need the 5.4.x DEVELOPMENT DLLs.
-        set MISSING_DEPS=1
-        set BEPINEX_BAD=1
-    )
-)
-
-if not exist "libs\0Harmony.dll" (
-    echo [MISSING] 0Harmony.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] 0Harmony.dll
-)
 
 if not exist "libs\UnityEngine.dll" (
     echo [MISSING] UnityEngine.dll
@@ -358,59 +329,12 @@ if %MISSING_DEPS% EQU 1 (
     echo.
     echo Some required DLLs are missing from the libs folder.
     echo.
-    if %BEPINEX_BAD% EQU 1 (
-        echo BepInEx development DLLs are missing or invalid.
-        echo.
-        set /p FIX_DEVDLLS="Run setup-bepinex.ps1 now? (Y/N): "
-        if /i "%FIX_DEVDLLS%"=="Y" (
-            echo.
-            echo Running BepInEx development DLL installer...
-            powershell.exe -ExecutionPolicy Bypass -File "%CD%\setup-bepinex.ps1"
-            echo.
-            echo Re-checking dependencies...
-            goto BUILD_MOD
-        )
-        echo.
-        pause
-        goto MENU
-    )
-    echo Would you like to automatically download BepInEx dependencies?
+    echo Please install the missing dependencies:
     echo.
-    set /p DOWNLOAD_DEPS="Download BepInEx dependencies now? (Y/N): "
-
-    if /i "%DOWNLOAD_DEPS%"=="Y" (
-        echo.
-        echo Running BepInEx setup script...
-        echo.
-        powershell.exe -ExecutionPolicy Bypass -File "%CD%\setup-bepinex.ps1"
-
-        if %ERRORLEVEL% EQU 0 (
-            echo.
-            echo BepInEx dependencies installed successfully!
-            echo.
-            echo NOTE: You still need Unity DLLs from your Gorilla Tag installation.
-            echo Use GTag Manager to extract Unity DLLs automatically.
-            echo.
-            pause
-            goto BUILD_MOD
-        ) else (
-            echo.
-            echo ERROR: Failed to download BepInEx dependencies!
-            echo Please check your internet connection or download manually.
-            echo.
-            pause
-            goto MENU
-        )
-    ) else (
-        echo.
-        echo Please install the missing dependencies:
-        echo.
-        echo For BepInEx DLLs: Run setup-bepinex.ps1
-        echo For Unity DLLs: Use GTag Manager to extract Unity DLLs from Gorilla Tag
-        echo.
-        pause
-        goto MENU
-    )
+    echo Use GTag Manager to extract Unity DLLs from Gorilla Tag
+    echo.
+    pause
+    goto MENU
 )
 
 echo All required DLLs found.
@@ -418,9 +342,9 @@ echo.
 
 REM Build the project
 echo Building project...
-echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release
+echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /t:Restore,Build /p:Configuration=Release
 echo.
-%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal /fl /flp:logfile=build.log;verbosity=diagnostic
+%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /t:Restore,Build /p:Configuration=Release /v:minimal /fl /flp:logfile=build.log;verbosity=diagnostic
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -447,39 +371,6 @@ if %ERRORLEVEL% EQU 0 (
     echo This log contains diagnostic information to help troubleshoot the issue
     echo.
 
-    REM Check if the error is related to BaseUnityPlugin
-    findstr /C:"BaseUnityPlugin" build.log >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo.
-        echo ========================================
-        echo DETECTED: BepInEx.dll Issue
-        echo ========================================
-        echo.
-        echo The build failed because BepInEx.BaseUnityPlugin could not be found.
-        echo This usually means you have the RUNTIME version of BepInEx.dll
-        echo instead of the DEVELOPMENT version needed for compilation.
-        echo.
-        echo Would you like to automatically download the correct BepInEx DLLs?
-        echo.
-        set /p FIX_BEPINEX="Download and install BepInEx dev DLLs? (Y/N): "
-
-        if /i "%FIX_BEPINEX%"=="Y" (
-            echo.
-            echo Running BepInEx development DLL installer...
-            echo.
-            powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
-
-            if %ERRORLEVEL% EQU 0 (
-                echo.
-                echo BepInEx development DLLs installed successfully!
-                echo.
-                set /p RETRY_BUILD="Try building again? (Y/N): "
-                if /i "!RETRY_BUILD!"=="Y" (
-                    goto BUILD_MOD
-                )
-            )
-        )
-    )
     echo.
 )
 pause
