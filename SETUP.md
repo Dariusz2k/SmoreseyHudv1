@@ -9,9 +9,9 @@ This guide will help you set up your development environment for building GTag m
    build.bat
    ```
 
-2. **Install BepInEx dependencies** (Option 4 from the menu)
-   - This will automatically download and install required BepInEx assemblies
-   - Includes: BepInEx.dll, BepInEx.Core.dll, 0Harmony.dll, etc.
+2. **Install BepInEx development dependencies** (Option 4 from the menu)
+   - This will automatically download and install required BepInEx 5.x *development* assemblies
+   - Includes: BepInEx.dll, 0Harmony.dll, Mono.Cecil.dll, MonoMod.RuntimeDetour.dll, MonoMod.Utils.dll
 
 3. **Extract Unity DLLs** (Option 3 from the menu - GTag Manager)
    - Use the GTag Manager to locate and extract Unity DLLs from Gorilla Tag
@@ -21,9 +21,9 @@ This guide will help you set up your development environment for building GTag m
 
 ## Required Dependencies
 
-### BepInEx Assemblies
-These are automatically downloaded by the setup script (BepInEx 5.x):
-- `BepInEx.dll` - Core BepInEx loader (contains `BaseUnityPlugin` class)
+### BepInEx Assemblies (Dev DLLs)
+These are automatically downloaded by the setup script (BepInEx 5.x dev build):
+- `BepInEx.dll` - Development assembly (contains `BepInEx.BaseUnityPlugin`)
 - `0Harmony.dll` - Harmony patching library
 - Additional support DLLs (Mono.Cecil, MonoMod, etc.)
 
@@ -47,10 +47,10 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 ```
 
 ### Option 2: Manual download
-1. Download BepInEx from [GitHub Releases](https://github.com/BepInEx/BepInEx/releases)
+1. Download the **DEV** BepInEx 5.x zip from [GitHub Releases](https://github.com/BepInEx/BepInEx/releases)
 2. Extract the archive
 3. Copy these files from `BepInEx/core/` to the `libs/` folder:
-   - BepInEx.dll (contains BaseUnityPlugin for BepInEx 5.x)
+   - BepInEx.dll (contains BaseUnityPlugin for BepInEx 5.x dev builds)
    - 0Harmony.dll
    - Other support DLLs as needed
 
@@ -61,9 +61,9 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 ## Troubleshooting
 
 ### Build Error: "BaseUnityPlugin could not be found"
-- **Cause**: Missing BepInEx.dll or incorrect reference
-- **Solution**: Run option 4 from the build menu to install BepInEx dependencies
-- **Note**: In BepInEx 5.x, BaseUnityPlugin is in BepInEx.dll (not BepInEx.Core.dll which is only in 6.x)
+- **Cause**: The `libs/BepInEx.dll` is from a runtime/source build instead of the **dev** build.
+- **Solution**: Run option 4 from the build menu to install the BepInEx 5.x development DLLs.
+- **Note**: In BepInEx 5.x, `BaseUnityPlugin` lives in `BepInEx.dll` (BepInEx.Core.dll is a 6.x assembly).
 
 ### Build Error: "UnityEngine could not be found"
 - **Cause**: Missing Unity DLLs
@@ -72,8 +72,23 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 ### BepInEx download fails
 - **Cause**: Network issues or GitHub rate limiting
 - **Solution**:
-  1. Download manually from [BepInEx Releases](https://github.com/BepInEx/BepInEx/releases/latest)
+  1. Download the **DEV** zip manually from [BepInEx Releases](https://github.com/BepInEx/BepInEx/releases/latest)
   2. Extract and copy DLLs to `libs/` folder as described above
+
+## Installing BepInEx Plugin Templates (Optional)
+
+If you want to scaffold new plugins with `dotnet new`, install the BepInEx templates:
+
+```bash
+dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json
+```
+
+You should then see templates such as:
+- **BepInEx 5 Plugin** (`bepinex5plugin`)
+- **BepInEx 6 .NET Core Plugin** (`bep6plugin_coreclr`)
+- **BepInEx 6 .NET Framework Plugin** (`bep6plugin_netfx`)
+- **BepInEx 6 Unity Il2Cpp Plugin** (`bep6plugin_unity_il2cpp`)
+- **BepInEx 6 Unity Mono Plugin** (`bep6plugin_unity_mono`)
 
 ## Project Structure
 
@@ -84,7 +99,6 @@ SmoreseyHudv1/
 ├── GTagManager.ps1          # GUI tool for game setup
 ├── libs/                    # Dependencies folder
 │   ├── BepInEx.dll
-│   ├── BepInEx.Core.dll
 │   ├── 0Harmony.dll
 │   ├── UnityEngine.dll
 │   └── UnityEngine.CoreModule.dll
