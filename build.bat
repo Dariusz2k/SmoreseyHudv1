@@ -297,10 +297,12 @@ echo.
 
 REM Check for BepInEx dependencies
 set MISSING_DEPS=0
+set BEPINEX_BAD=0
 
 if not exist "libs\BepInEx.dll" (
     echo [MISSING] BepInEx.dll
     set MISSING_DEPS=1
+    set BEPINEX_BAD=1
 ) else (
     echo [OK] BepInEx.dll
     powershell.exe -ExecutionPolicy Bypass -Command "try { $asm=[System.Reflection.Assembly]::LoadFrom((Resolve-Path 'libs\\BepInEx.dll').Path); if ($null -eq $asm.GetType('BepInEx.BaseUnityPlugin')) { exit 2 } } catch { exit 3 }"
@@ -308,6 +310,7 @@ if not exist "libs\BepInEx.dll" (
         echo [ERROR] BepInEx.dll could not be loaded for verification.
         echo         Try running verify-bepinex-dll.ps1 for details.
         set MISSING_DEPS=1
+        set BEPINEX_BAD=1
     ) else if errorlevel 2 (
         echo [ERROR] BepInEx.BaseUnityPlugin not found in BepInEx.dll.
         echo         You need the 5.4.x DEVELOPMENT DLLs.
@@ -322,6 +325,7 @@ if not exist "libs\BepInEx.dll" (
             goto BUILD_MOD
         )
         set MISSING_DEPS=1
+        set BEPINEX_BAD=1
     )
 )
 
@@ -369,6 +373,13 @@ if %MISSING_DEPS% EQU 1 (
     echo.
     echo Some required DLLs are missing from the libs folder.
     echo.
+    if %BEPINEX_BAD% EQU 1 (
+        echo BepInEx development DLLs are missing or invalid.
+        echo Please run fix-bepinex-dev-dlls.ps1 to install the correct DLLs.
+        echo.
+        pause
+        goto MENU
+    )
     echo Would you like to automatically download BepInEx dependencies?
     echo.
     set /p DOWNLOAD_DEPS="Download BepInEx dependencies now? (Y/N): "
