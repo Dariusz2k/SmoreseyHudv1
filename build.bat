@@ -312,7 +312,8 @@ if not exist "libs\BepInEx.dll" (
         set MISSING_DEPS=1
         set BEPINEX_BAD=1
     ) else if errorlevel 2 (
-        echo [ERROR] BepInEx.BaseUnityPlugin not found in BepInEx.dll.
+        echo [ERROR] BepInEx.dll in libs does not contain BepInEx.BaseUnityPlugin.
+        echo         This means you have runtime/source DLLs instead of the dev build.
         echo         You need the 5.4.x DEVELOPMENT DLLs.
         echo.
         set /p FIX_DEVDLLS="Run fix-bepinex-dev-dlls.ps1 now? (Y/N): "

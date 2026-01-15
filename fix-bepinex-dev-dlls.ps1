@@ -14,7 +14,6 @@ $tempPath = "temp_bepinex"
 $bepinexVersion = "5.4.23.4"
 $releaseTag = "v$bepinexVersion"
 $downloadUrl = $null
-$isSourceZip = $false
 
 function Get-BepInExAssetInfo {
     param (
@@ -88,16 +87,17 @@ if (-not $assetInfo) {
 }
 
 if (-not $assetInfo) {
-    Write-Host "WARNING: Could not locate a valid BepInEx 5.4.x release asset." -ForegroundColor Yellow
-    Write-Host "Falling back to the BepInEx source zip for $releaseTag." -ForegroundColor Yellow
-    Write-Host "Note: The source zip may not contain prebuilt DLLs." -ForegroundColor Yellow
+    Write-Host "ERROR: Could not locate a valid BepInEx 5.4.x development asset." -ForegroundColor Red
+    Write-Host "The source zip does not contain prebuilt DLLs needed for compilation." -ForegroundColor Yellow
+    Write-Host "Please download the 5.4.x DEV zip from the BepInEx releases page:" -ForegroundColor Yellow
+    Write-Host "https://github.com/BepInEx/BepInEx/releases" -ForegroundColor Cyan
     Write-Host ""
-    $downloadUrl = "https://codeload.github.com/BepInEx/BepInEx/zip/refs/tags/$releaseTag"
-    $isSourceZip = $true
-} else {
-    $bepinexVersion = $assetInfo.Version
-    $downloadUrl = $assetInfo.Url
+    pause
+    exit 1
 }
+
+$bepinexVersion = $assetInfo.Version
+$downloadUrl = $assetInfo.Url
 
 # Create libs folder if it doesn't exist
 if (-not (Test-Path $libsPath)) {
@@ -164,12 +164,7 @@ foreach ($candidate in $candidateDlls) {
 
 if (-not $bepinexDllPath) {
     Write-Host "ERROR: Could not find a development BepInEx.dll containing BaseUnityPlugin." -ForegroundColor Red
-    if ($isSourceZip) {
-        Write-Host "The source zip does not ship prebuilt development DLLs." -ForegroundColor Yellow
-        Write-Host "Download the 5.4.x DEV zip from the BepInEx releases page instead:" -ForegroundColor Yellow
-    } else {
-        Write-Host "Make sure you are using a 5.4.x DEV zip from the BepInEx releases page." -ForegroundColor Yellow
-    }
+    Write-Host "Make sure you are using a 5.4.x DEV zip from the BepInEx releases page." -ForegroundColor Yellow
     Write-Host "https://github.com/BepInEx/BepInEx/releases" -ForegroundColor Cyan
     Write-Host ""
     pause
