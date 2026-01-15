@@ -64,6 +64,13 @@ namespace GTagSpeedMod
         private Type inputPollerType;
         private object inputPollerInstance;
         private readonly HashSet<string> loggedMissingFeatures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Button edge detection - track previous state to detect button presses
+        private bool prevRightPrimary;
+        private bool prevRightSecondary;
+        private bool prevLeftPrimary;
+        private bool prevLeftSecondary;
+        private bool hasLoggedInputPollerMembers;
         private int activeOptionIndex = -1;
         private float originalFov = -1f;
         private Color? originalAmbientLight;
@@ -590,26 +597,44 @@ namespace GTagSpeedMod
                 return false;
             }
 
-            // Check for button DOWN events (pressed this frame)
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown"))
+            // Get current button states
+            bool currRightPrimary = GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton");
+            bool currRightSecondary = GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton");
+            bool currLeftPrimary = GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton");
+            bool currLeftSecondary = GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton");
+
+            // Detect rising edge (button was just pressed)
+            bool rightPrimaryPressed = currRightPrimary && !prevRightPrimary;
+            bool rightSecondaryPressed = currRightSecondary && !prevRightSecondary;
+            bool leftPrimaryPressed = currLeftPrimary && !prevLeftPrimary;
+            bool leftSecondaryPressed = currLeftSecondary && !prevLeftSecondary;
+
+            // Update previous states for next frame
+            prevRightPrimary = currRightPrimary;
+            prevRightSecondary = currRightSecondary;
+            prevLeftPrimary = currLeftPrimary;
+            prevLeftSecondary = currLeftSecondary;
+
+            // Check if any button was pressed this frame
+            if (rightPrimaryPressed)
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Right Controller Primary Button (Y)");
                 return true;
             }
 
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown"))
+            if (rightSecondaryPressed)
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Right Controller Secondary Button (B)");
                 return true;
             }
 
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown"))
+            if (leftPrimaryPressed)
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Left Controller Primary Button (X)");
                 return true;
             }
 
-            if (GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown"))
+            if (leftSecondaryPressed)
             {
                 Logger.LogInfo("[Input] Menu toggle detected: Left Controller Secondary Button (A)");
                 return true;
@@ -642,7 +667,46 @@ namespace GTagSpeedMod
             else
             {
                 Logger.LogInfo("[Input] ControllerInputPoller successfully cached - controller input ready!");
+
+                // Log available members once for debugging
+                if (!hasLoggedInputPollerMembers)
+                {
+                    LogInputPollerMembers();
+                    hasLoggedInputPollerMembers = true;
+                }
             }
+        }
+
+        private void LogInputPollerMembers()
+        {
+            if (inputPollerType == null)
+            {
+                return;
+            }
+
+            Logger.LogInfo("[Input] === Available ControllerInputPoller members ===");
+
+            var properties = inputPollerType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            Logger.LogInfo($"[Input] Properties ({properties.Length}):");
+            foreach (var prop in properties)
+            {
+                if (prop.PropertyType == typeof(bool))
+                {
+                    Logger.LogInfo($"[Input]   - {prop.Name} (bool)");
+                }
+            }
+
+            var fields = inputPollerType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            Logger.LogInfo($"[Input] Fields ({fields.Length}):");
+            foreach (var field in fields)
+            {
+                if (field.FieldType == typeof(bool))
+                {
+                    Logger.LogInfo($"[Input]   - {field.Name} (bool)");
+                }
+            }
+
+            Logger.LogInfo("[Input] ==========================================");
         }
 
         private static Type FindTypeByName(string typeName)
