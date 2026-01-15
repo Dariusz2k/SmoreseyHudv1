@@ -9,11 +9,11 @@ This guide will help you set up your development environment for building GTag m
    build.bat
    ```
 
-2. **Install BepInEx development dependencies** (Option 4 from the menu)
-   - This will automatically download and install required BepInEx 5.x *development* assemblies
+2. **Install BepInEx development dependencies**
+   - Run `setup-bepinex.ps1` to download the required BepInEx 5.x *development* assemblies
    - Includes: BepInEx.dll, 0Harmony.dll, Mono.Cecil.dll, MonoMod.RuntimeDetour.dll, MonoMod.Utils.dll
 
-3. **Extract Unity DLLs** (Option 3 from the menu - GTag Manager)
+3. **Extract Unity DLLs** (GTag Manager)
    - Use the GTag Manager to locate and extract Unity DLLs from Gorilla Tag
 
 4. **Build your mod** (Option 2 from the menu)
@@ -62,18 +62,31 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 
 ### Build Error: "BaseUnityPlugin could not be found"
 - **Cause**: The `libs/BepInEx.dll` is from a runtime/source build instead of the **dev** build.
-- **Solution**: Run option 4 from the build menu to install the BepInEx 5.x development DLLs.
+- **Solution**: Run `setup-bepinex.ps1` to install the BepInEx 5.x development DLLs.
 - **Note**: In BepInEx 5.x, `BaseUnityPlugin` lives in `BepInEx.dll` (BepInEx.Core.dll is a 6.x assembly).
 
 ### Build Error: "UnityEngine could not be found"
 - **Cause**: Missing Unity DLLs
-- **Solution**: Use option 3 (GTag Manager) to extract Unity DLLs from Gorilla Tag
+- **Solution**: Use GTag Manager to extract Unity DLLs from Gorilla Tag
 
 ### BepInEx download fails
 - **Cause**: Network issues or GitHub rate limiting
 - **Solution**:
   1. Download the **DEV** zip manually from [BepInEx Releases](https://github.com/BepInEx/BepInEx/releases/latest)
   2. Extract and copy DLLs to `libs/` folder as described above
+
+## Installing and Configuring BepInEx (Game Runtime)
+
+1. Install BepInEx in your Gorilla Tag install (see `BEPINEX_SETUP.md`).
+2. Run the game with BepInEx at least once to generate configuration files.
+3. Enable the BepInEx console for easier debugging:
+
+```
+[Logging.Console]
+Enabled = true
+```
+
+You can set this in `BepInEx/config/BepInEx.cfg`.
 
 ## Installing BepInEx Plugin Templates (Optional)
 
