@@ -11,7 +11,82 @@ Write-Host ""
 $libsPath = "libs"
 $tempPath = "temp_bepinex"
 $bepinexVersion = "5.4.23.2"
-$downloadUrl = "https://github.com/BepInEx/BepInEx/releases/download/v$bepinexVersion/BepInEx_x64_$bepinexVersion.zip"
+$releaseTag = "v$bepinexVersion"
+$downloadUrl = $null
+
+function Get-BepInExAssetInfo {
+    param (
+        [Parameter(Mandatory)]
+        [string]$Tag
+    )
+
+    $releaseApiUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases/tags/$Tag"
+    try {
+        $release = Invoke-RestMethod -Uri $releaseApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1" }
+    } catch {
+        return $null
+    }
+
+    $version = $Tag.TrimStart("v")
+    $expectedAsset = "BepInEx_x64_$version.zip"
+    $asset = $release.assets | Where-Object { $_.name -eq $expectedAsset } | Select-Object -First 1
+    if (-not $asset) {
+        return $null
+    }
+
+    return @{
+        Version = $version
+        Url = $asset.browser_download_url
+    }
+}
+
+function Get-LatestBepInEx54AssetInfo {
+    $releasesApiUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases"
+    try {
+        $releases = Invoke-RestMethod -Uri $releasesApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1" }
+    } catch {
+        return $null
+    }
+
+    $release = $releases |
+        Where-Object { $_.tag_name -match "^v5\.4\." } |
+        Sort-Object -Property published_at -Descending |
+        Select-Object -First 1
+
+    if (-not $release) {
+        return $null
+    }
+
+    $version = $release.tag_name.TrimStart("v")
+    $expectedAsset = "BepInEx_x64_$version.zip"
+    $asset = $release.assets | Where-Object { $_.name -eq $expectedAsset } | Select-Object -First 1
+    if (-not $asset) {
+        return $null
+    }
+
+    return @{
+        Version = $version
+        Url = $asset.browser_download_url
+    }
+}
+
+$assetInfo = Get-BepInExAssetInfo -Tag $releaseTag
+if (-not $assetInfo) {
+    Write-Host "Preferred release $releaseTag not found. Searching for latest 5.4.x release..." -ForegroundColor Yellow
+    $assetInfo = Get-LatestBepInEx54AssetInfo
+}
+
+if (-not $assetInfo) {
+    Write-Host "ERROR: Could not locate a valid BepInEx 5.4.x release asset." -ForegroundColor Red
+    Write-Host "Please download manually from the BepInEx releases page:" -ForegroundColor Yellow
+    Write-Host "https://github.com/BepInEx/BepInEx/releases" -ForegroundColor Cyan
+    Write-Host ""
+    pause
+    exit 1
+}
+
+$bepinexVersion = $assetInfo.Version
+$downloadUrl = $assetInfo.Url
 
 # Create libs folder if it doesn't exist
 if (-not (Test-Path $libsPath)) {
@@ -33,9 +108,7 @@ Write-Host ""
 $zipPath = Join-Path $tempPath "BepInEx.zip"
 
 try {
-    # Download with progress
-    $webClient = New-Object System.Net.WebClient
-    $webClient.DownloadFile($downloadUrl, $zipPath)
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath
     Write-Host "Download complete!" -ForegroundColor Green
     Write-Host ""
 } catch {

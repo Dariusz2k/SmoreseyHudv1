@@ -303,6 +303,16 @@ if not exist "libs\BepInEx.dll" (
     set MISSING_DEPS=1
 ) else (
     echo [OK] BepInEx.dll
+    powershell.exe -ExecutionPolicy Bypass -Command "try { $asm=[System.Reflection.Assembly]::LoadFrom((Resolve-Path 'libs\\BepInEx.dll').Path); if ($null -eq $asm.GetType('BepInEx.BaseUnityPlugin')) { exit 2 } } catch { exit 3 }"
+    if errorlevel 3 (
+        echo [ERROR] BepInEx.dll could not be loaded for verification.
+        echo         Try running verify-bepinex-dll.ps1 for details.
+        set MISSING_DEPS=1
+    ) else if errorlevel 2 (
+        echo [ERROR] BepInEx.BaseUnityPlugin not found in BepInEx.dll.
+        echo         You need the 5.4.x DEVELOPMENT DLLs.
+        set MISSING_DEPS=1
+    )
 )
 
 if not exist "libs\0Harmony.dll" (
