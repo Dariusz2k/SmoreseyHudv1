@@ -1,6 +1,7 @@
 using BepInEx;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 namespace GTagSpeedMod
 {
@@ -61,6 +62,14 @@ namespace GTagSpeedMod
         private float nextInputPollerRefreshTime;
         private Type inputPollerType;
         private object inputPollerInstance;
+        private readonly HashSet<string> loggedMissingFeatures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private int activeOptionIndex = -1;
+        private float originalFov = -1f;
+        private Color? originalAmbientLight;
+        private bool? originalFog;
+        private Color? originalFogColor;
+        private float originalFogDensity;
+        private Vector3? originalGravity;
         
         // This runs when your mod loads
         void Awake()
@@ -78,6 +87,7 @@ namespace GTagSpeedMod
             {
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
+                LogDebugState("Menu toggle pressed");
             }
 
             if (handAnchor == null && Time.time >= nextHandSearchTime)
@@ -86,10 +96,7 @@ namespace GTagSpeedMod
                 nextHandSearchTime = Time.time + 2f;
             }
 
-            if (options[0].Enabled)
-            {
-                ApplySpeedBoost();
-            }
+            ApplyActiveOptionEffects();
         }
         
         // This draws the UI on screen
@@ -128,12 +135,13 @@ namespace GTagSpeedMod
             GUILayout.Label("Shmoresy Menu", titleStyle, GUILayout.Height(26));
 
             scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(300));
-            foreach (var option in options)
+            for (var i = 0; i < options.Length; i++)
             {
+                var option = options[i];
                 var label = option.Enabled ? $"[ON] {option.Name}" : $"[OFF] {option.Name}";
                 if (GUILayout.Button(label, toggleButtonStyle, GUILayout.Height(32)))
                 {
-                    option.Enabled = !option.Enabled;
+                    ToggleOption(i);
                 }
                 if (!string.IsNullOrWhiteSpace(option.Description))
                 {
@@ -151,6 +159,18 @@ namespace GTagSpeedMod
             GUILayout.Label("Press Y/B (or F1) to toggle menu");
 
             GUILayout.Space(6);
+            if (GUILayout.Button("Turn Off Mod", buttonStyle, GUILayout.Height(28)))
+            {
+                DisableAllOptions();
+            }
+
+            GUILayout.Space(4);
+            if (GUILayout.Button("Dump Debug Info", buttonStyle, GUILayout.Height(28)))
+            {
+                LogDebugState("Manual debug dump");
+            }
+
+            GUILayout.Space(4);
             if (GUILayout.Button("Close", buttonStyle, GUILayout.Height(28)))
             {
                 showMenu = false;
@@ -179,7 +199,7 @@ namespace GTagSpeedMod
             
             if (!hasLoggedSpeedWarning)
             {
-                Logger.LogWarning("Speed boost logic needs to be implemented!");
+                Logger.LogWarning("Speed boost logic needs to be implemented for GorillaLocomotion.Player.");
                 hasLoggedSpeedWarning = true;
             }
         }
@@ -275,6 +295,184 @@ namespace GTagSpeedMod
             }
 
             return false;
+        }
+
+        private void ApplyActiveOptionEffects()
+        {
+            if (activeOptionIndex < 0 || activeOptionIndex >= options.Length)
+            {
+                return;
+            }
+
+            var option = options[activeOptionIndex];
+            if (!option.Enabled)
+            {
+                return;
+            }
+
+            switch (option.Name)
+            {
+                case "Speed Boost":
+                    ApplySpeedBoost();
+                    break;
+                case "FOV Boost":
+                    ApplyFovBoost();
+                    break;
+                case "Night Mode":
+                    ApplyNightMode();
+                    break;
+                case "Low Gravity":
+                    ApplyLowGravity();
+                    break;
+                case "Slow Fall":
+                    ApplySlowFall();
+                    break;
+                default:
+                    LogMissingFeature(option.Name);
+                    break;
+            }
+        }
+
+        private void ToggleOption(int index)
+        {
+            if (index < 0 || index >= options.Length)
+            {
+                return;
+            }
+
+            if (options[index].Enabled)
+            {
+                options[index].Enabled = false;
+                activeOptionIndex = -1;
+                RestoreEnvironmentSettings();
+                return;
+            }
+
+            DisableAllOptions();
+            options[index].Enabled = true;
+            activeOptionIndex = index;
+        }
+
+        private void DisableAllOptions()
+        {
+            for (var i = 0; i < options.Length; i++)
+            {
+                options[i].Enabled = false;
+            }
+
+            activeOptionIndex = -1;
+            RestoreEnvironmentSettings();
+        }
+
+        private void ApplyFovBoost()
+        {
+            var camera = ResolveCamera();
+            if (camera == null)
+            {
+                LogMissingFeature("FOV Boost");
+                return;
+            }
+
+            if (originalFov < 0f)
+            {
+                originalFov = camera.fieldOfView;
+            }
+
+            camera.fieldOfView = Mathf.Clamp(originalFov + 20f, 60f, 120f);
+        }
+
+        private void ApplyNightMode()
+        {
+            if (!originalAmbientLight.HasValue)
+            {
+                originalAmbientLight = RenderSettings.ambientLight;
+            }
+
+            if (!originalFog.HasValue)
+            {
+                originalFog = RenderSettings.fog;
+                originalFogColor = RenderSettings.fogColor;
+                originalFogDensity = RenderSettings.fogDensity;
+            }
+
+            RenderSettings.ambientLight = new Color(0.1f, 0.05f, 0.2f, 1f);
+            RenderSettings.fog = true;
+            RenderSettings.fogColor = new Color(0.05f, 0.02f, 0.08f, 1f);
+            RenderSettings.fogDensity = 0.02f;
+        }
+
+        private void ApplyLowGravity()
+        {
+            if (!originalGravity.HasValue)
+            {
+                originalGravity = Physics.gravity;
+            }
+
+            Physics.gravity = originalGravity.Value * 0.35f;
+        }
+
+        private void ApplySlowFall()
+        {
+            if (!originalGravity.HasValue)
+            {
+                originalGravity = Physics.gravity;
+            }
+
+            Physics.gravity = new Vector3(originalGravity.Value.x, originalGravity.Value.y * 0.6f, originalGravity.Value.z);
+        }
+
+        private void RestoreEnvironmentSettings()
+        {
+            if (originalFov >= 0f)
+            {
+                var camera = ResolveCamera();
+                if (camera != null)
+                {
+                    camera.fieldOfView = originalFov;
+                }
+            }
+
+            if (originalAmbientLight.HasValue)
+            {
+                RenderSettings.ambientLight = originalAmbientLight.Value;
+            }
+
+            if (originalFog.HasValue)
+            {
+                RenderSettings.fog = originalFog.Value;
+                if (originalFogColor.HasValue)
+                {
+                    RenderSettings.fogColor = originalFogColor.Value;
+                }
+
+                RenderSettings.fogDensity = originalFogDensity;
+            }
+
+            if (originalGravity.HasValue)
+            {
+                Physics.gravity = originalGravity.Value;
+            }
+        }
+
+        private void LogMissingFeature(string featureName)
+        {
+            if (loggedMissingFeatures.Add(featureName))
+            {
+                Logger.LogWarning($"Feature '{featureName}' is not implemented yet. Check logs for updates.");
+            }
+        }
+
+        private void LogDebugState(string reason)
+        {
+            var camera = ResolveCamera();
+            var cameraName = camera != null ? camera.name : "None";
+            var handName = handAnchor != null ? handAnchor.name : "None";
+            var inputPollerName = inputPollerType != null ? inputPollerType.FullName : "None";
+
+            Logger.LogInfo($"[Debug] {reason}");
+            Logger.LogInfo($"[Debug] HandAnchor: {handName}");
+            Logger.LogInfo($"[Debug] Camera: {cameraName}");
+            Logger.LogInfo($"[Debug] InputPoller: {inputPollerName}");
         }
 
         private bool IsMenuTogglePressed()
