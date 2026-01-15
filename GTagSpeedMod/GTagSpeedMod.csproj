@@ -60,11 +60,18 @@
       <HintPath>$(LibsPath)\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(LibsPath)\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <!-- Add more Unity/Gorilla Tag DLLs here as needed -->
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SpeedModPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Mods\Advantages.cs" />
+    <Compile Include="Managers\NotificationManager.cs" />
+    <Compile Include="Utilities\GameUtilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

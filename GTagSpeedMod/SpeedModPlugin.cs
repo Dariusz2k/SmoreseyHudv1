@@ -2,6 +2,7 @@ using BepInEx;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using GTagSpeedMod.Managers;
 
 namespace GTagSpeedMod
 {
@@ -101,6 +102,9 @@ namespace GTagSpeedMod
         // This draws the UI on screen
         void OnGUI()
         {
+            // Always draw notifications, even when menu is hidden
+            NotificationManager.DrawNotifications();
+
             if (!showMenu)
             {
                 return;
