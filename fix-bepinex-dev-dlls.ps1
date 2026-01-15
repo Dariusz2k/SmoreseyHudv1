@@ -11,7 +11,7 @@ Write-Host ""
 $libsPath = "libs"
 $tempPath = "temp_bepinex"
 $bepinexVersion = "5.4.23.2"
-$downloadUrl = "https://github.com/BepInEx/BepInEx/releases/download/v$bepinexVersion/BepInEx_x64_$bepinexVersion.0.zip"
+$downloadUrl = "https://github.com/BepInEx/BepInEx/releases/download/v$bepinexVersion/BepInEx_x64_$bepinexVersion.zip"
 
 # Create libs folder if it doesn't exist
 if (-not (Test-Path $libsPath)) {
