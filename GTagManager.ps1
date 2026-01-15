@@ -5,7 +5,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$projectPath = Split-Path -Parent $PSScriptRoot
+$projectPath = $PSScriptRoot
 if (-not $projectPath) { $projectPath = "D:\ProgrammingStuff\GTagMenu" }
 $libsPath = Join-Path $projectPath "libs"
 $tempPath = Join-Path $projectPath "temp"
