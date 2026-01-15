@@ -315,16 +315,6 @@ if not exist "libs\BepInEx.dll" (
         echo [ERROR] BepInEx.dll in libs does not contain BepInEx.BaseUnityPlugin.
         echo         This means you have runtime/source DLLs instead of the dev build.
         echo         You need the 5.4.x DEVELOPMENT DLLs.
-        echo.
-        set /p FIX_DEVDLLS="Run fix-bepinex-dev-dlls.ps1 now? (Y/N): "
-        if /i "%FIX_DEVDLLS%"=="Y" (
-            echo.
-            echo Running BepInEx development DLL installer...
-            powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
-            echo.
-            echo Re-checking dependencies...
-            goto BUILD_MOD
-        )
         set MISSING_DEPS=1
         set BEPINEX_BAD=1
     )
@@ -376,7 +366,16 @@ if %MISSING_DEPS% EQU 1 (
     echo.
     if %BEPINEX_BAD% EQU 1 (
         echo BepInEx development DLLs are missing or invalid.
-        echo Please run fix-bepinex-dev-dlls.ps1 to install the correct DLLs.
+        echo.
+        set /p FIX_DEVDLLS="Run setup-bepinex.ps1 now? (Y/N): "
+        if /i "%FIX_DEVDLLS%"=="Y" (
+            echo.
+            echo Running BepInEx development DLL installer...
+            powershell.exe -ExecutionPolicy Bypass -File "%CD%\setup-bepinex.ps1"
+            echo.
+            echo Re-checking dependencies...
+            goto BUILD_MOD
+        )
         echo.
         pause
         goto MENU
