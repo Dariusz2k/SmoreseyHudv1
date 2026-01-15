@@ -98,168 +98,135 @@ echo Building GTag Speed Mod
 echo ========================================
 echo.
 
-REM Use vswhere to find any installed Visual Studio
-set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
-
-if not exist "%VSWHERE%" (
-    echo ERROR: vswhere.exe not found!
-    echo Visual Studio installer may not be present.
-    echo Please reinstall Visual Studio with .NET desktop development workload
+REM Check if .NET SDK is installed
+where dotnet >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: .NET SDK is not installed or not in PATH!
+    echo.
+    echo Please install .NET SDK from:
+    echo https://dotnet.microsoft.com/download
+    echo.
+    echo After installation, restart your command prompt and try again.
     echo.
     pause
     goto MENU
 )
 
-REM Find the installation path of the latest Visual Studio
-for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath`) do (
-    set VS_PATH=%%i
-)
-
-if not defined VS_PATH (
-    echo ERROR: Visual Studio installation not found!
-    echo Please make sure Visual Studio is installed with .NET desktop development workload
-    echo.
-    pause
-    goto MENU
-)
-
-REM Construct MSBuild path
-set MSBUILD_PATH="%VS_PATH%\MSBuild\Current\Bin\MSBuild.exe"
-
-if not exist %MSBUILD_PATH% (
-    echo ERROR: MSBuild not found at expected location!
-    echo Expected: %MSBUILD_PATH%
-    echo.
-    pause
-    goto MENU
-)
-
-echo Found Visual Studio at: %VS_PATH%
-echo Found MSBuild at: %MSBUILD_PATH%
+REM Display .NET SDK version
+for /f "tokens=*" %%v in ('dotnet --version 2^>nul') do set DOTNET_VERSION=%%v
+echo Found .NET SDK version: %DOTNET_VERSION%
 echo.
 
-REM Validate libs folder and required DLLs
-echo Checking for required dependencies...
+REM Check if BepInEx templates are installed, if not install them
+echo Checking for BepInEx templates...
+dotnet new list | findstr /C:"bepinex5plugin" >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo BepInEx templates not found. Installing...
+    echo.
+    dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json
+
+    if %ERRORLEVEL% NEQ 0 (
+        echo.
+        echo WARNING: Failed to install BepInEx templates.
+        echo This is not critical as the project is already configured.
+        echo.
+    ) else (
+        echo.
+        echo BepInEx templates installed successfully!
+        echo.
+    )
+) else (
+    echo BepInEx templates are already installed.
+    echo.
+)
+echo.
+
+REM Validate libs folder and Unity DLLs (BepInEx will come from NuGet)
+echo Checking for Unity dependencies...
 echo Current directory: %CD%
 echo.
 
 if not exist "libs" (
-    echo ERROR: libs folder not found!
-    echo Please ensure the libs folder exists with required DLLs
-    echo Expected location: %CD%\libs
+    echo WARNING: libs folder not found!
+    echo Creating libs folder...
+    mkdir libs
     echo.
-    echo TIP: Use option 3 to launch GTag Manager and setup BepInEx DLLs
+    echo You need Unity DLLs from your Gorilla Tag installation.
+    echo Use option 5 to extract Unity DLLs automatically.
     echo.
-    pause
-    goto MENU
-)
-
-echo Found libs folder at: %CD%\libs
-echo Contents:
-dir /b libs\*.dll 2>nul
-echo.
-
-REM Check for BepInEx dependencies
-set MISSING_DEPS=0
-
-if not exist "libs\BepInEx.dll" (
-    echo [MISSING] BepInEx.dll
-    set MISSING_DEPS=1
+    set /p CONTINUE="Continue anyway to download BepInEx packages? (Y/N): "
+    if /i not "%CONTINUE%"=="Y" (
+        goto MENU
+    )
 ) else (
-    echo [OK] BepInEx.dll
+    echo Found libs folder at: %CD%\libs
+    echo.
 )
 
-if not exist "libs\0Harmony.dll" (
-    echo [MISSING] 0Harmony.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] 0Harmony.dll
-)
+REM Check for Unity dependencies (required for Gorilla Tag specific code)
+set MISSING_UNITY=0
 
 if not exist "libs\UnityEngine.dll" (
     echo [MISSING] UnityEngine.dll
-    set MISSING_DEPS=1
+    set MISSING_UNITY=1
 ) else (
     echo [OK] UnityEngine.dll
 )
 
 if not exist "libs\UnityEngine.CoreModule.dll" (
     echo [MISSING] UnityEngine.CoreModule.dll
-    set MISSING_DEPS=1
+    set MISSING_UNITY=1
 ) else (
     echo [OK] UnityEngine.CoreModule.dll
 )
 
 if not exist "libs\UnityEngine.IMGUIModule.dll" (
     echo [MISSING] UnityEngine.IMGUIModule.dll
-    set MISSING_DEPS=1
+    set MISSING_UNITY=1
 ) else (
     echo [OK] UnityEngine.IMGUIModule.dll
 )
 
 if not exist "libs\UnityEngine.InputLegacyModule.dll" (
     echo [MISSING] UnityEngine.InputLegacyModule.dll
-    set MISSING_DEPS=1
+    set MISSING_UNITY=1
 ) else (
     echo [OK] UnityEngine.InputLegacyModule.dll
 )
 
 echo.
 
-if %MISSING_DEPS% EQU 1 (
+if %MISSING_UNITY% EQU 1 (
     echo ========================================
-    echo ERROR: Missing required dependencies!
+    echo WARNING: Missing Unity DLLs!
     echo ========================================
     echo.
-    echo Some required DLLs are missing from the libs folder.
+    echo Unity DLLs are required for Gorilla Tag specific references.
+    echo Use option 5 to extract Unity DLLs from Gorilla Tag.
     echo.
-    echo Would you like to automatically download BepInEx dependencies?
+    echo BepInEx and Harmony will be downloaded from NuGet automatically.
     echo.
-    set /p DOWNLOAD_DEPS="Download BepInEx dependencies now? (Y/N): "
+    set /p CONTINUE="Continue build anyway? (Y/N): "
 
-    if /i "%DOWNLOAD_DEPS%"=="Y" (
-        echo.
-        echo Running BepInEx setup script...
-        echo.
-        powershell.exe -ExecutionPolicy Bypass -File "%CD%\setup-bepinex.ps1"
-
-        if %ERRORLEVEL% EQU 0 (
-            echo.
-            echo BepInEx dependencies installed successfully!
-            echo.
-            echo NOTE: You still need Unity DLLs from your Gorilla Tag installation.
-            echo Use option 5 to extract Unity DLLs automatically.
-            echo.
-            pause
-            goto BUILD_MOD
-        ) else (
-            echo.
-            echo ERROR: Failed to download BepInEx dependencies!
-            echo Please check your internet connection or download manually.
-            echo.
-            pause
-            goto MENU
-        )
-    ) else (
-        echo.
-        echo Please install the missing dependencies:
-        echo.
-        echo For BepInEx DLLs: Use option 4 to install BepInEx dependencies
-        echo For Unity DLLs: Use option 5 to extract Unity DLLs from Gorilla Tag
-        echo.
-        pause
+    if /i not "%CONTINUE%"=="Y" (
         goto MENU
     )
+    echo.
+) else (
+    echo All Unity DLLs found.
+    echo.
 )
 
-echo All required DLLs found.
+echo NOTE: BepInEx and Harmony will be automatically downloaded from NuGet.
 echo.
 
-REM Build the project
-echo Building project...
-echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release
+REM Build the project using dotnet build
+echo Building project with dotnet build...
 echo.
-%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal /fl /flp:logfile=build.log;verbosity=diagnostic
+echo Running: dotnet build GTagSpeedMod\GTagSpeedMod.csproj -c Release
+echo.
+
+dotnet build GTagSpeedMod\GTagSpeedMod.csproj -c Release --verbosity minimal /flp:logfile=build.log;verbosity=diagnostic
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -268,7 +235,7 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================
     echo.
     echo Your mod DLL is located at:
-    echo GTagSpeedMod\bin\Release\GTagSpeedMod.dll
+    echo GTagSpeedMod\bin\Release\net472\GTagSpeedMod.dll
     echo.
     echo Copy this file to:
     echo [Gorilla Tag Folder]\BepInEx\plugins\
@@ -281,6 +248,9 @@ if %ERRORLEVEL% EQU 0 (
     echo BUILD FAILED!
     echo ========================================
     echo Check the error messages above
+    echo.
+    echo If you see errors about missing Unity DLLs, use option 5 to extract them.
+    echo If you see .NET SDK errors, make sure .NET SDK is properly installed.
     echo.
     echo A detailed build log has been saved to: build.log
     echo This log contains diagnostic information to help troubleshoot the issue
