@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 title GTag Mod Menu
 color 0A
 
@@ -13,18 +14,20 @@ echo 2. Build/Compile Mod
 echo 3. Launch GTag Manager
 echo 4. Install/Update BepInEx Dependencies
 echo 5. Extract Unity DLLs from Gorilla Tag
-echo 6. Exit
+echo 6. Fix BepInEx Development DLLs
+echo 7. Exit
 echo.
 echo ========================================
 echo.
-set /p choice="Enter your choice (1-6): "
+set /p choice="Enter your choice (1-7): "
 
 if "%choice%"=="1" goto PULL_CODE
 if "%choice%"=="2" goto BUILD_MOD
 if "%choice%"=="3" goto LAUNCH_MANAGER
 if "%choice%"=="4" goto INSTALL_DEPS
 if "%choice%"=="5" goto EXTRACT_UNITY
-if "%choice%"=="6" goto EXIT_SCRIPT
+if "%choice%"=="6" goto FIX_BEPINEX_DEVDLLS
+if "%choice%"=="7" goto EXIT_SCRIPT
 echo Invalid choice! Please try again.
 timeout /t 2 >nul
 goto MENU
@@ -418,6 +421,41 @@ if %ERRORLEVEL% EQU 0 (
     echo A detailed build log has been saved to: build.log
     echo This log contains diagnostic information to help troubleshoot the issue
     echo.
+
+    REM Check if the error is related to BaseUnityPlugin
+    findstr /C:"BaseUnityPlugin" build.log >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo.
+        echo ========================================
+        echo DETECTED: BepInEx.dll Issue
+        echo ========================================
+        echo.
+        echo The build failed because BepInEx.BaseUnityPlugin could not be found.
+        echo This usually means you have the RUNTIME version of BepInEx.dll
+        echo instead of the DEVELOPMENT version needed for compilation.
+        echo.
+        echo Would you like to automatically download the correct BepInEx DLLs?
+        echo.
+        set /p FIX_BEPINEX="Download and install BepInEx dev DLLs? (Y/N): "
+
+        if /i "%FIX_BEPINEX%"=="Y" (
+            echo.
+            echo Running BepInEx development DLL installer...
+            echo.
+            powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
+
+            if %ERRORLEVEL% EQU 0 (
+                echo.
+                echo BepInEx development DLLs installed successfully!
+                echo.
+                set /p RETRY_BUILD="Try building again? (Y/N): "
+                if /i "!RETRY_BUILD!"=="Y" (
+                    goto BUILD_MOD
+                )
+            )
+        )
+    )
+    echo.
 )
 pause
 goto MENU
@@ -541,7 +579,63 @@ timeout /t 2 >nul
 goto MENU
 
 REM ========================================
-REM OPTION 6: Exit
+REM OPTION 6: Fix BepInEx Development DLLs
+REM ========================================
+:FIX_BEPINEX_DEVDLLS
+cls
+echo ========================================
+echo Fix BepInEx Development DLLs
+echo ========================================
+echo.
+
+if not exist "fix-bepinex-dev-dlls.ps1" (
+    echo ERROR: fix-bepinex-dev-dlls.ps1 not found!
+    echo Expected location: %CD%\fix-bepinex-dev-dlls.ps1
+    echo.
+    pause
+    goto MENU
+)
+
+echo This will download and install BepInEx 5.4.x DEVELOPMENT DLLs.
+echo These are required for compiling mods, not for running the game.
+echo.
+echo The following DLLs will be downloaded and installed to libs folder:
+echo   - BepInEx.dll (development version)
+echo   - 0Harmony.dll
+echo   - Mono.Cecil.dll
+echo   - MonoMod.RuntimeDetour.dll
+echo   - MonoMod.Utils.dll
+echo.
+echo Existing files will be overwritten.
+echo.
+echo Press any key to continue or Ctrl+C to cancel...
+pause >nul
+
+echo.
+echo Running BepInEx development DLL installer...
+echo.
+powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
+
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo ========================================
+    echo Installation completed successfully!
+    echo ========================================
+    echo.
+) else (
+    echo.
+    echo ========================================
+    echo Installation failed or was cancelled.
+    echo ========================================
+    echo.
+)
+
+echo Returning to menu...
+timeout /t 3 >nul
+goto MENU
+
+REM ========================================
+REM OPTION 7: Exit
 REM ========================================
 :EXIT_SCRIPT
 cls
