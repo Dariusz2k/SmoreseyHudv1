@@ -95,12 +95,15 @@ namespace GTagSpeedMod
                 Logger.LogInfo("Hand menu will not be available until hand anchor is found");
             }
 
-            Logger.LogInfo("Building menu styles...");
-            BuildMenuStyles();
+            // Create pink texture early (doesn't require OnGUI context)
+            pinkTexture = new Texture2D(1, 1);
+            pinkTexture.SetPixel(0, 0, new Color(1f, 0.2f, 0.6f, 0.9f));
+            pinkTexture.Apply();
 
             Logger.LogInfo("========================================");
             Logger.LogInfo("GTag Mod Menu loaded successfully!");
             Logger.LogInfo("Press F1, Y, or B to toggle menu");
+            Logger.LogInfo("Menu styles will be built on first OnGUI call");
             Logger.LogInfo("========================================");
 
             // Log initial state
@@ -808,8 +811,12 @@ namespace GTagSpeedMod
 
         private void BuildMenuStyles()
         {
+            // Note: This must only be called from OnGUI() because it uses GUI.skin
+            Logger.LogInfo("[Styles] Building menu styles (called from OnGUI)");
+
             if (pinkTexture == null)
             {
+                // Fallback if texture wasn't created in Awake
                 pinkTexture = new Texture2D(1, 1);
                 pinkTexture.SetPixel(0, 0, new Color(1f, 0.2f, 0.6f, 0.9f));
                 pinkTexture.Apply();
@@ -832,6 +839,8 @@ namespace GTagSpeedMod
             {
                 fontSize = 13
             };
+
+            Logger.LogInfo("[Styles] Menu styles built successfully");
         }
     }
 }
