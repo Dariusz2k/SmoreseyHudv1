@@ -1,0 +1,10 @@
+# Build Configuration
+# Copy this file to "build.config" and edit the paths below
+
+# Path to your Gorilla Tag installation
+# Used for automatic deployment of mods
+GAME_PATH=C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag
+
+# Git branch to pull from (usually your current branch)
+# Leave blank to use current branch automatically
+PULL_BRANCH=
