@@ -74,6 +74,7 @@
     <Compile Include="SpeedModPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mods\Advantages.cs" />
+    <Compile Include="Mods\Movement.cs" />
     <Compile Include="Managers\NotificationManager.cs" />
     <Compile Include="Utilities\GameUtilities.cs" />
   </ItemGroup>

@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using GTagSpeedMod.Managers;
+using GTagSpeedMod.Mods;
 
 namespace GTagSpeedMod
 {
@@ -275,73 +276,113 @@ namespace GTagSpeedMod
         {
             Logger.LogInfo("[HandAnchor] Attempting to find hand anchor...");
 
+            // Method 1: Try GorillaTagger reflection first (most reliable)
             if (TryFindHandFromGorillaTagger())
             {
-                Logger.LogInfo("[HandAnchor] Found via GorillaTagger reflection");
+                Logger.LogInfo($"[HandAnchor] Found via GorillaTagger reflection: {handAnchor.name}");
                 return;
             }
 
-            var rightHand = GameObject.Find("RightHand Controller");
-            if (rightHand != null)
-            {
-                handAnchor = rightHand.transform;
-                Logger.LogInfo("[HandAnchor] Found 'RightHand Controller'");
-                return;
-            }
+            // Method 2: Search for common VR hand object names
+            string[] handNames = {
+                "RightHandTriggerCollider",  // Most common for Gorilla Tag
+                "LeftHandTriggerCollider",
+                "RightHand",
+                "LeftHand",
+                "RightHandAnchor",
+                "LeftHandAnchor",
+                "RightHandTransform",
+                "LeftHandTransform",
+                "RightHand Controller",
+                "LeftHand Controller",
+                "Player RightHand",
+                "Player LeftHand"
+            };
 
-            var rightHandAnchor = GameObject.Find("RightHandAnchor");
-            if (rightHandAnchor != null)
+            foreach (var handName in handNames)
             {
-                handAnchor = rightHandAnchor.transform;
-                Logger.LogInfo("[HandAnchor] Found 'RightHandAnchor'");
-                return;
-            }
-
-            var rightHandTransform = GameObject.Find("RightHand");
-            if (rightHandTransform != null)
-            {
-                handAnchor = rightHandTransform.transform;
-                Logger.LogInfo("[HandAnchor] Found 'RightHand'");
-                return;
-            }
-
-            var rightHandNode = GameObject.Find("PlayerRightHand");
-            if (rightHandNode != null)
-            {
-                handAnchor = rightHandNode.transform;
-                Logger.LogInfo("[HandAnchor] Found 'PlayerRightHand'");
-                return;
-            }
-
-            Logger.LogInfo("[HandAnchor] Named objects not found, searching all transforms...");
-#pragma warning disable CS0618
-            var transforms = GameObject.FindObjectsOfType<Transform>();
-#pragma warning restore CS0618
-            Logger.LogInfo($"[HandAnchor] Found {transforms.Length} total transforms in scene");
-
-            foreach (var transform in transforms)
-            {
-                if (transform == null)
+                var foundObject = GameObject.Find(handName);
+                if (foundObject != null)
                 {
-                    continue;
-                }
-
-                var name = transform.name;
-                if (string.IsNullOrEmpty(name))
-                {
-                    continue;
-                }
-
-                if (name.IndexOf("right", StringComparison.OrdinalIgnoreCase) >= 0
-                    && name.IndexOf("hand", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    handAnchor = transform;
-                    Logger.LogInfo($"[HandAnchor] Found via fallback search: {name}");
+                    handAnchor = foundObject.transform;
+                    Logger.LogInfo($"[HandAnchor] Found by name: '{handName}'");
                     return;
                 }
             }
 
-            Logger.LogWarning("[HandAnchor] No hand anchor found after searching all methods");
+            // Method 3: Search all transforms for hand-related objects
+            Logger.LogInfo("[HandAnchor] Named search failed, searching all transforms...");
+            Transform[] transforms = null;
+
+            try
+            {
+                transforms = GameObject.FindObjectsOfType<Transform>();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[HandAnchor] Error finding transforms: {ex.Message}");
+                return;
+            }
+
+            if (transforms == null || transforms.Length == 0)
+            {
+                Logger.LogWarning($"[HandAnchor] FindObjectsOfType returned {(transforms == null ? "null" : "0")} transforms");
+                Logger.LogInfo("[HandAnchor] Game may not be fully loaded yet - will retry in 2 seconds");
+                return;
+            }
+
+            Logger.LogInfo($"[HandAnchor] Searching through {transforms.Length} transforms...");
+
+            // Priority 1: Look for TriggerCollider objects (best for hand menus)
+            foreach (var transform in transforms)
+            {
+                if (transform == null || string.IsNullOrEmpty(transform.name))
+                    continue;
+
+                var nameLower = transform.name.ToLower();
+
+                if (nameLower.Contains("trigger") && nameLower.Contains("collider") && nameLower.Contains("right"))
+                {
+                    handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found TriggerCollider (priority): {transform.name}");
+                    return;
+                }
+            }
+
+            // Priority 2: Look for any right hand object
+            foreach (var transform in transforms)
+            {
+                if (transform == null || string.IsNullOrEmpty(transform.name))
+                    continue;
+
+                var nameLower = transform.name.ToLower();
+
+                if (nameLower.Contains("right") && (nameLower.Contains("hand") || nameLower.Contains("controller")))
+                {
+                    handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found right hand object: {transform.name}");
+                    return;
+                }
+            }
+
+            // Priority 3: Fallback to left hand
+            foreach (var transform in transforms)
+            {
+                if (transform == null || string.IsNullOrEmpty(transform.name))
+                    continue;
+
+                var nameLower = transform.name.ToLower();
+
+                if (nameLower.Contains("left") && (nameLower.Contains("hand") || nameLower.Contains("controller")))
+                {
+                    handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found left hand object (fallback): {transform.name}");
+                    return;
+                }
+            }
+
+            Logger.LogWarning("[HandAnchor] No hand anchor found - will retry in 2 seconds");
+            Logger.LogInfo("[HandAnchor] Menu will appear in top-left corner until hand anchor is found");
         }
 
         private bool TryFindHandFromGorillaTagger()
@@ -395,19 +436,64 @@ namespace GTagSpeedMod
             switch (option.Name)
             {
                 case "Speed Boost":
-                    ApplySpeedBoost();
+                    Movement.SpeedBoost(speedMultiplier);
                     break;
-                case "FOV Boost":
-                    ApplyFovBoost();
+                case "Fly":
+                    Movement.Fly();
                     break;
-                case "Night Mode":
-                    ApplyNightMode();
+                case "No Clip":
+                    Movement.NoClip();
+                    break;
+                case "Long Arms":
+                    Movement.LongArms(2.0f); // You can adjust this value
+                    break;
+                case "High Jump":
+                    Movement.HighJump(2.0f); // You can adjust this value
                     break;
                 case "Low Gravity":
-                    ApplyLowGravity();
+                    Movement.LowGravity(0.5f); // You can adjust this value
+                    break;
+                case "Wall Walk":
+                    Movement.WallWalk();
+                    break;
+                case "ESP":
+                    Movement.ESP();
+                    break;
+                case "Tag Aura":
+                    Advantages.TagAura();
+                    break;
+                case "Anti Tag":
+                    Advantages.AntiTag();
+                    break;
+                case "Platforms":
+                    Movement.Platforms();
+                    break;
+                case "Chams":
+                    Movement.Chams();
+                    break;
+                case "Teleport":
+                    Movement.Teleport();
+                    break;
+                case "Speed Lines":
+                    Movement.SpeedLines();
+                    break;
+                case "Night Mode":
+                    Movement.NightMode();
+                    break;
+                case "Name Spoof":
+                    Movement.NameSpoof("YourNameHere"); // You can customize this
+                    break;
+                case "Random Colors":
+                    Movement.RandomColors();
                     break;
                 case "Slow Fall":
-                    ApplySlowFall();
+                    Movement.SlowFall(0.5f); // You can adjust this value
+                    break;
+                case "Spin Bots":
+                    Movement.SpinBot(360f); // Degrees per second
+                    break;
+                case "FOV Boost":
+                    Movement.FOVBoost(90f); // You can adjust this value
                     break;
                 default:
                     LogMissingFeature(option.Name);
