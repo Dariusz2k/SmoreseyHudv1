@@ -9,9 +9,9 @@ echo        GTag Mod Development Menu
 echo ========================================
 echo.
 echo 1. Pull Latest Code from Git
-echo 2. Build/Compile Mod
+echo 2. Build/Compile Mod (Uses NuGet Packages)
 echo 3. Launch GTag Manager
-echo 4. Install/Update BepInEx Dependencies
+echo 4. Install BepInEx Templates (for .NET SDK)
 echo 5. Extract Unity DLLs from Gorilla Tag
 echo 6. Exit
 echo.
@@ -22,7 +22,7 @@ set /p choice="Enter your choice (1-6): "
 if "%choice%"=="1" goto PULL_CODE
 if "%choice%"=="2" goto BUILD_MOD
 if "%choice%"=="3" goto LAUNCH_MANAGER
-if "%choice%"=="4" goto INSTALL_DEPS
+if "%choice%"=="4" goto INSTALL_TEMPLATES
 if "%choice%"=="5" goto EXTRACT_UNITY
 if "%choice%"=="6" goto EXIT_SCRIPT
 echo Invalid choice! Please try again.
@@ -98,13 +98,58 @@ echo Building GTag Speed Mod
 echo ========================================
 echo.
 
-REM Use vswhere to find any installed Visual Studio
+REM Check for .NET SDK first (preferred method)
+where dotnet >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo Found .NET SDK, using dotnet build...
+    echo.
+
+    REM Clean previous builds
+    if exist "GTagSpeedMod\bin" rmdir /s /q "GTagSpeedMod\bin" 2>nul
+    if exist "GTagSpeedMod\obj" rmdir /s /q "GTagSpeedMod\obj" 2>nul
+
+    REM Build using dotnet CLI (handles restore automatically)
+    dotnet build GTagSpeedMod\GTagSpeedMod.csproj -c Release -v minimal
+
+    if %ERRORLEVEL% EQU 0 (
+        echo.
+        echo ========================================
+        echo BUILD SUCCESSFUL!
+        echo ========================================
+        echo.
+        echo Your mod DLL is located at:
+        echo GTagSpeedMod\bin\Release\net472\GTagSpeedMod.dll
+        echo.
+        echo Copy this file to:
+        echo [Gorilla Tag Folder]\BepInEx\plugins\
+        echo.
+    ) else (
+        echo.
+        echo ========================================
+        echo BUILD FAILED!
+        echo ========================================
+        echo Check the error messages above
+        echo.
+        echo TIP: Make sure you have .NET Framework 4.7.2 targeting pack installed
+        echo Download from: https://dotnet.microsoft.com/download/dotnet-framework/net472
+        echo.
+    )
+    pause
+    goto MENU
+)
+
+echo .NET SDK not found, checking for Visual Studio...
+echo.
+
+REM Fall back to MSBuild if dotnet is not available
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 
 if not exist "%VSWHERE%" (
-    echo ERROR: vswhere.exe not found!
-    echo Visual Studio installer may not be present.
-    echo Please reinstall Visual Studio with .NET desktop development workload
+    echo ERROR: Neither .NET SDK nor Visual Studio found!
+    echo.
+    echo Please install one of the following:
+    echo   1. .NET SDK 6.0+ from: https://dotnet.microsoft.com/download
+    echo   2. Visual Studio with .NET desktop development workload
     echo.
     pause
     goto MENU
@@ -117,7 +162,7 @@ for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Mi
 
 if not defined VS_PATH (
     echo ERROR: Visual Studio installation not found!
-    echo Please make sure Visual Studio is installed with .NET desktop development workload
+    echo Please install .NET SDK or Visual Studio with .NET desktop development workload
     echo.
     pause
     goto MENU
@@ -138,128 +183,10 @@ echo Found Visual Studio at: %VS_PATH%
 echo Found MSBuild at: %MSBUILD_PATH%
 echo.
 
-REM Validate libs folder and required DLLs
-echo Checking for required dependencies...
-echo Current directory: %CD%
+REM Build the project with MSBuild (using restore target)
+echo Building project with MSBuild...
 echo.
-
-if not exist "libs" (
-    echo ERROR: libs folder not found!
-    echo Please ensure the libs folder exists with required DLLs
-    echo Expected location: %CD%\libs
-    echo.
-    echo TIP: Use option 3 to launch GTag Manager and setup BepInEx DLLs
-    echo.
-    pause
-    goto MENU
-)
-
-echo Found libs folder at: %CD%\libs
-echo Contents:
-dir /b libs\*.dll 2>nul
-echo.
-
-REM Check for BepInEx dependencies
-set MISSING_DEPS=0
-
-if not exist "libs\BepInEx.dll" (
-    echo [MISSING] BepInEx.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] BepInEx.dll
-)
-
-if not exist "libs\0Harmony.dll" (
-    echo [MISSING] 0Harmony.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] 0Harmony.dll
-)
-
-if not exist "libs\UnityEngine.dll" (
-    echo [MISSING] UnityEngine.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] UnityEngine.dll
-)
-
-if not exist "libs\UnityEngine.CoreModule.dll" (
-    echo [MISSING] UnityEngine.CoreModule.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] UnityEngine.CoreModule.dll
-)
-
-if not exist "libs\UnityEngine.IMGUIModule.dll" (
-    echo [MISSING] UnityEngine.IMGUIModule.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] UnityEngine.IMGUIModule.dll
-)
-
-if not exist "libs\UnityEngine.InputLegacyModule.dll" (
-    echo [MISSING] UnityEngine.InputLegacyModule.dll
-    set MISSING_DEPS=1
-) else (
-    echo [OK] UnityEngine.InputLegacyModule.dll
-)
-
-echo.
-
-if %MISSING_DEPS% EQU 1 (
-    echo ========================================
-    echo ERROR: Missing required dependencies!
-    echo ========================================
-    echo.
-    echo Some required DLLs are missing from the libs folder.
-    echo.
-    echo Would you like to automatically download BepInEx dependencies?
-    echo.
-    set /p DOWNLOAD_DEPS="Download BepInEx dependencies now? (Y/N): "
-
-    if /i "%DOWNLOAD_DEPS%"=="Y" (
-        echo.
-        echo Running BepInEx setup script...
-        echo.
-        powershell.exe -ExecutionPolicy Bypass -File "%CD%\setup-bepinex.ps1"
-
-        if %ERRORLEVEL% EQU 0 (
-            echo.
-            echo BepInEx dependencies installed successfully!
-            echo.
-            echo NOTE: You still need Unity DLLs from your Gorilla Tag installation.
-            echo Use option 5 to extract Unity DLLs automatically.
-            echo.
-            pause
-            goto BUILD_MOD
-        ) else (
-            echo.
-            echo ERROR: Failed to download BepInEx dependencies!
-            echo Please check your internet connection or download manually.
-            echo.
-            pause
-            goto MENU
-        )
-    ) else (
-        echo.
-        echo Please install the missing dependencies:
-        echo.
-        echo For BepInEx DLLs: Use option 4 to install BepInEx dependencies
-        echo For Unity DLLs: Use option 5 to extract Unity DLLs from Gorilla Tag
-        echo.
-        pause
-        goto MENU
-    )
-)
-
-echo All required DLLs found.
-echo.
-
-REM Build the project
-echo Building project...
-echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release
-echo.
-%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal /fl /flp:logfile=build.log;verbosity=diagnostic
+%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /t:Restore;Build /p:Configuration=Release /v:minimal
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -268,12 +195,10 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================
     echo.
     echo Your mod DLL is located at:
-    echo GTagSpeedMod\bin\Release\GTagSpeedMod.dll
+    echo GTagSpeedMod\bin\Release\net472\GTagSpeedMod.dll
     echo.
     echo Copy this file to:
     echo [Gorilla Tag Folder]\BepInEx\plugins\
-    echo.
-    echo Detailed build log saved to: build.log
     echo.
 ) else (
     echo.
@@ -282,8 +207,8 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================
     echo Check the error messages above
     echo.
-    echo A detailed build log has been saved to: build.log
-    echo This log contains diagnostic information to help troubleshoot the issue
+    echo TIP: Make sure you have .NET Framework 4.7.2 targeting pack installed
+    echo Download from: https://dotnet.microsoft.com/download/dotnet-framework/net472
     echo.
 )
 pause
@@ -328,50 +253,71 @@ timeout /t 2 >nul
 goto MENU
 
 REM ========================================
-REM OPTION 4: Install/Update BepInEx Dependencies
+REM OPTION 4: Install BepInEx Templates
 REM ========================================
-:INSTALL_DEPS
+:INSTALL_TEMPLATES
 cls
 echo ========================================
-echo Install/Update BepInEx Dependencies
+echo Install BepInEx Templates for .NET SDK
 echo ========================================
 echo.
 
-if not exist "setup-bepinex.ps1" (
-    echo ERROR: setup-bepinex.ps1 not found!
-    echo Expected location: %CD%\setup-bepinex.ps1
+REM Check if dotnet is installed
+where dotnet >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: .NET SDK is not installed!
+    echo.
+    echo Please install .NET SDK 6.0 or later from:
+    echo https://dotnet.microsoft.com/download
+    echo.
+    echo After installing, you can use this option to install BepInEx templates
+    echo for creating new plugins easily.
     echo.
     pause
     goto MENU
 )
 
-echo This will download and install the required BepInEx assemblies.
-echo Existing files will be overwritten.
+echo Found .NET SDK. Checking version...
+dotnet --version
+echo.
+
+echo This will install BepInEx plugin templates for creating new mods.
+echo.
+echo Available templates after installation:
+echo   - BepInEx 5 Plugin (bepinex5plugin)
+echo   - BepInEx 6 Unity Mono Plugin (bep6plugin_unity_mono)
+echo   - BepInEx 6 Unity Il2Cpp Plugin (bep6plugin_unity_il2cpp)
 echo.
 echo Press any key to continue or Ctrl+C to cancel...
 pause >nul
 
 echo.
-echo Running BepInEx setup script...
+echo Installing BepInEx templates from NuGet...
 echo.
-powershell.exe -ExecutionPolicy Bypass -File "%CD%\setup-bepinex.ps1"
+dotnet new install BepInEx.Templates --nuget-source https://nuget.bepinex.dev/v3/index.json
 
 if %ERRORLEVEL% EQU 0 (
     echo.
     echo ========================================
-    echo Dependencies installed successfully!
+    echo Templates installed successfully!
     echo ========================================
+    echo.
+    echo You can now create new BepInEx plugins using:
+    echo   dotnet new bepinex5plugin -n YourModName
+    echo.
+    echo To see all available templates, run:
+    echo   dotnet new list
     echo.
 ) else (
     echo.
     echo ========================================
-    echo Installation failed or was cancelled.
+    echo Installation failed!
     echo ========================================
+    echo Check your internet connection and try again.
     echo.
 )
 
-echo Returning to menu...
-timeout /t 3 >nul
+pause
 goto MENU
 
 REM ========================================
