@@ -87,13 +87,9 @@ namespace GTagSpeedMod.Managers
 
         private static void InitializeStyle()
         {
-            notificationStyle = new GUIStyle(GUI.skin.box)
-            {
-                fontSize = 14,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(5, 5, 5, 5)
-            };
+            notificationStyle = new GUIStyle(GUI.skin.box);
+            notificationStyle.fontSize = 14;
+            notificationStyle.padding = new RectOffset(5, 5, 5, 5);
 
             var bgTexture = new Texture2D(1, 1);
             bgTexture.SetPixel(0, 0, new Color(0.1f, 0.1f, 0.1f, 0.8f));

@@ -563,23 +563,23 @@ namespace GTagSpeedMod.Mods
                 }
             }
 
-            // Position gun pointer based on raycast
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (UnityEngine.Physics.Raycast(ray, out RaycastHit hit, 100f))
+            // Position gun pointer forward from camera
+            // NOTE: Full raycasting requires UnityEngine.PhysicsModule
+            // This is a simplified version - add PhysicsModule DLL for full functionality
+            if (Camera.main != null)
             {
-                gunPointer.transform.position = hit.point;
+                Vector3 forward = Camera.main.transform.forward * 10f;
+                gunPointer.transform.position = Camera.main.transform.position + forward;
             }
         }
 
         private static object GetGunTarget()
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (UnityEngine.Physics.Raycast(ray, out RaycastHit hit, 100f))
-            {
-                var rig = hit.collider.GetComponentInParent(vrRigType);
-                return rig;
-            }
-            return null;
+            // NOTE: Raycasting requires UnityEngine.PhysicsModule
+            // This is a placeholder - add PhysicsModule DLL for full gun targeting
+            // For now, return nearest VRRig as a fallback
+            LogInfo("Gun targeting requires PhysicsModule - using nearest player");
+            return FindNearestTaggedPlayer();
         }
 
         private static bool IsLocalPlayer(object player)

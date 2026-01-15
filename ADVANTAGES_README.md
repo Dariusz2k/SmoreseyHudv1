@@ -110,13 +110,28 @@ GTagSpeedMod/
 
 ## Compilation Notes
 
-### Added References:
-- `UnityEngine.PhysicsModule` - For raycasting in gun system
+### DLL References Used:
+- `BepInEx.dll` - BepInEx framework
+- `UnityEngine.dll` - Core Unity engine
+- `UnityEngine.CoreModule.dll` - Core Unity types
+- `UnityEngine.IMGUIModule.dll` - GUI rendering
+- `UnityEngine.UI.dll` - UI system
+- `Assembly-CSharp.dll` - Gorilla Tag game code
+
+### References NOT Required (removed to fix build):
+- ~~`UnityEngine.PhysicsModule`~~ - Not available, gun system uses simplified targeting
+- ~~`UnityEngine.TextRenderingModule`~~ - Not needed, IMGUI types used instead
+- ~~`UnityEngine.InputLegacyModule`~~ - Not available in standard libs folder
 
 ### Added Namespaces:
 - `GTagSpeedMod.Mods`
 - `GTagSpeedMod.Managers`
 - `GTagSpeedMod.Utilities`
+
+### Build Fixes Applied:
+1. **Removed PhysicsModule dependency** - Gun rendering uses simplified forward projection instead of raycasting
+2. **Removed TextRenderingModule dependency** - NotificationManager uses basic GUIStyle without FontStyle/TextAnchor
+3. **Simplified gun targeting** - GetGunTarget() returns nearest player instead of raycast hit
 
 ## Usage Example
 
@@ -173,6 +188,46 @@ This implementation is simplified from the original iiMenu code:
 - Tag aura system
 - Configurable distances
 
+## Upgrading for Full Functionality
+
+### To Enable Full Gun/Raycasting Features:
+
+If you have access to the full Unity modules, add these DLLs to your `libs/` folder and update the `.csproj`:
+
+```xml
+<Reference Include="UnityEngine.PhysicsModule">
+  <HintPath>$(LibsPath)\UnityEngine.PhysicsModule.dll</HintPath>
+  <Private>False</Private>
+</Reference>
+```
+
+Then update `Advantages.cs` to use real raycasting:
+
+```csharp
+// In RenderGun() - replace simplified version with:
+Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+{
+    gunPointer.transform.position = hit.point;
+}
+
+// In GetGunTarget() - replace placeholder with:
+Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+{
+    return hit.collider.GetComponentInParent(vrRigType);
+}
+```
+
+### To Enable Advanced Text Styling:
+
+Add `UnityEngine.TextRenderingModule.dll` and update `NotificationManager.cs`:
+
+```csharp
+notificationStyle.fontStyle = FontStyle.Bold;
+notificationStyle.alignment = TextAnchor.MiddleLeft;
+```
+
 ## Next Steps
 
 To fully implement all features:
@@ -182,6 +237,7 @@ To fully implement all features:
 3. **Complete Placeholders** - Fill in `FindNearestTaggedPlayer()` and other stubs
 4. **Add Menu Integration** - Create buttons/options in main menu to trigger advantages
 5. **Add Paintbrawl Support** - Implement paintbrawl-specific features if needed
+6. **Add Physics/Text Modules** - For full gun raycasting and text styling (see above)
 
 ## License
 

@@ -56,12 +56,12 @@
       <HintPath>$(LibsPath)\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>$(LibsPath)\UnityEngine.InputLegacyModule.dll</HintPath>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(LibsPath)\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>$(LibsPath)\UnityEngine.PhysicsModule.dll</HintPath>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(LibsPath)\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <!-- Add more Unity/Gorilla Tag DLLs here as needed -->
