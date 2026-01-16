@@ -34,8 +34,15 @@ These must be extracted from your Gorilla Tag installation:
 - `UnityEngine.IMGUIModule.dll` (optional, for UI)
 
 ### Gorilla Tag Assemblies
-Optional, but useful for accessing game-specific code:
+Required for accessing game-specific code and Photon networking:
 - `Assembly-CSharp.dll` - Contains Gorilla Tag game code
+- `PhotonRealtime.dll` - Photon networking library
+- `Photon3Unity3D.dll` - Photon Unity integration
+- `PhotonUnityNetworking.dll` - Photon PUN framework
+- `PhotonVoice.dll` - Photon voice chat library
+
+**Note**: These DLLs are located in your Gorilla Tag installation at:
+`[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
 
 ## Manual Setup
 
@@ -68,6 +75,17 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 ### Build Error: "UnityEngine could not be found"
 - **Cause**: Missing Unity DLLs
 - **Solution**: Use option 3 (GTag Manager) to extract Unity DLLs from Gorilla Tag
+
+### Build Error: "Unable to find package PhotonRealtime" or "Unable to find package PhotonVoice"
+- **Cause**: Photon DLLs are not available as NuGet packages
+- **Solution**:
+  1. Navigate to your Gorilla Tag installation: `[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
+  2. Copy these DLLs to the `libs/` folder:
+     - PhotonRealtime.dll
+     - Photon3Unity3D.dll
+     - PhotonUnityNetworking.dll
+     - PhotonVoice.dll
+  3. The project will now compile successfully
 
 ### BepInEx download fails
 - **Cause**: Network issues or GitHub rate limiting

@@ -15,14 +15,30 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2021.3.5" />
-    <PackageReference Include="PhotonRealtime" Version="5.*" />
-    <PackageReference Include="PhotonVoice" Version="2.*" />
   </ItemGroup>
 
-  <!-- Reference local Unity/Game DLLs if needed -->
+  <!-- Reference local Unity/Game DLLs -->
+  <!-- Note: Photon DLLs must be copied from Gorilla Tag installation -->
+  <!-- Typically found in: [Gorilla Tag]\Gorilla Tag_Data\Managed\ -->
   <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)..\libs')">
     <Reference Include="Assembly-CSharp" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\Assembly-CSharp.dll')">
       <HintPath>$(MSBuildThisFileDirectory)..\libs\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonRealtime" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\PhotonRealtime.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonRealtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Photon3Unity3D" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\Photon3Unity3D.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\Photon3Unity3D.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonUnityNetworking" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\PhotonUnityNetworking.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonUnityNetworking.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonVoice" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\PhotonVoice.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonVoice.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
