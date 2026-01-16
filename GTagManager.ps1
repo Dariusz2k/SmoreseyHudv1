@@ -10,6 +10,7 @@ if (-not $projectPath) { $projectPath = "D:\ProgrammingStuff\GTagMenu" }
 $libsPath = Join-Path $projectPath "libs"
 $tempPath = Join-Path $projectPath "temp"
 $modDllPath = Join-Path $projectPath "GTagSpeedMod\bin\Release\net472\GTagSpeedMod.dll"
+$modProjectPath = Join-Path $projectPath "GTagSpeedMod\GTagSpeedMod.csproj"
 $modName = "GTagSpeedMod.dll"
 
 # Create the main form with STYLE
@@ -210,17 +211,29 @@ $step3Panel.Controls.Add($modStatusLabel)
 $modLocationLabel = New-Object System.Windows.Forms.Label
 $modLocationLabel.Location = New-Object System.Drawing.Point(10,68)
 $modLocationLabel.Size = New-Object System.Drawing.Size(690,18)
-$modLocationLabel.Text = 'Build your mod first using build.bat'
+$modLocationLabel.Text = 'Build your mod first using the Build Mod button below'
 $modLocationLabel.Font = New-Object System.Drawing.Font("Consolas",8)
 $modLocationLabel.ForeColor = [System.Drawing.Color]::LightGray
 $step3Panel.Controls.Add($modLocationLabel)
 
 # Mod Management Buttons
+$buildModButton = New-Object System.Windows.Forms.Button
+$buildModButton.Location = New-Object System.Drawing.Point(10,90)
+$buildModButton.Size = New-Object System.Drawing.Size(160,35)
+$buildModButton.Text = 'Build Mod'
+$buildModButton.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
+$buildModButton.BackColor = [System.Drawing.Color]::FromArgb(34,139,34)  # Forest Green
+$buildModButton.ForeColor = [System.Drawing.Color]::White
+$buildModButton.FlatStyle = 'Flat'
+$buildModButton.Cursor = 'Hand'
+$buildModButton.Add_Click({ BuildMod })
+$step3Panel.Controls.Add($buildModButton)
+
 $loadModButton = New-Object System.Windows.Forms.Button
-$loadModButton.Location = New-Object System.Drawing.Point(10,90)
-$loadModButton.Size = New-Object System.Drawing.Size(220,35)
-$loadModButton.Text = '>> INSTALL MOD TO GAME'
-$loadModButton.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
+$loadModButton.Location = New-Object System.Drawing.Point(180,90)
+$loadModButton.Size = New-Object System.Drawing.Size(180,35)
+$loadModButton.Text = '>> INSTALL MOD'
+$loadModButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $loadModButton.BackColor = [System.Drawing.Color]::FromArgb(220,20,60)  # Crimson
 $loadModButton.ForeColor = [System.Drawing.Color]::White
 $loadModButton.FlatStyle = 'Flat'
@@ -230,10 +243,10 @@ $loadModButton.Add_Click({ InstallMod })
 $step3Panel.Controls.Add($loadModButton)
 
 $unloadModButton = New-Object System.Windows.Forms.Button
-$unloadModButton.Location = New-Object System.Drawing.Point(240,90)
-$unloadModButton.Size = New-Object System.Drawing.Size(220,35)
-$unloadModButton.Text = '[X] UNINSTALL MOD'
-$unloadModButton.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
+$unloadModButton.Location = New-Object System.Drawing.Point(370,90)
+$unloadModButton.Size = New-Object System.Drawing.Size(160,35)
+$unloadModButton.Text = '[X] UNINSTALL'
+$unloadModButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $unloadModButton.BackColor = [System.Drawing.Color]::FromArgb(178,34,34)  # Firebrick
 $unloadModButton.ForeColor = [System.Drawing.Color]::White
 $unloadModButton.FlatStyle = 'Flat'
@@ -243,9 +256,9 @@ $unloadModButton.Add_Click({ UninstallMod })
 $step3Panel.Controls.Add($unloadModButton)
 
 $openPluginsFolderButton = New-Object System.Windows.Forms.Button
-$openPluginsFolderButton.Location = New-Object System.Drawing.Point(470,90)
-$openPluginsFolderButton.Size = New-Object System.Drawing.Size(230,35)
-$openPluginsFolderButton.Text = 'Open Plugins Folder'
+$openPluginsFolderButton.Location = New-Object System.Drawing.Point(540,90)
+$openPluginsFolderButton.Size = New-Object System.Drawing.Size(160,35)
+$openPluginsFolderButton.Text = 'Open Plugins'
 $openPluginsFolderButton.Font = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Bold)
 $openPluginsFolderButton.BackColor = [System.Drawing.Color]::FromArgb(70,130,180)
 $openPluginsFolderButton.ForeColor = [System.Drawing.Color]::White
@@ -298,6 +311,113 @@ function WriteStatus {
     $form.Refresh()
 }
 
+function BuildMod {
+    WriteStatus "================================================"
+    WriteStatus "[>>] Building Mod with dotnet..."
+    WriteStatus "================================================"
+
+    # Check if dotnet is installed
+    try {
+        $dotnetVersion = & dotnet --version 2>&1
+        WriteStatus "[OK] .NET SDK Found: $dotnetVersion"
+    }
+    catch {
+        WriteStatus "[X] ERROR: .NET SDK not found!"
+        [System.Windows.Forms.MessageBox]::Show(
+            ".NET SDK is not installed!`n`nPlease install .NET SDK 6.0 or later from:`nhttps://dotnet.microsoft.com/download",
+            "SDK Not Found",
+            'OK',
+            'Error'
+        )
+        return
+    }
+
+    # Check if project file exists
+    if (-not (Test-Path $modProjectPath)) {
+        WriteStatus "[X] ERROR: Project file not found at $modProjectPath"
+        [System.Windows.Forms.MessageBox]::Show(
+            "Project file not found!`n`n$modProjectPath",
+            "Project Not Found",
+            'OK',
+            'Error'
+        )
+        return
+    }
+
+    $progressBar.Value = 20
+
+    # Build the project
+    WriteStatus "[>>] Running: dotnet build -c Release"
+    WriteStatus ""
+
+    $buildOutput = & dotnet build $modProjectPath -c Release 2>&1
+
+    $progressBar.Value = 80
+
+    # Parse build output
+    $buildSuccess = $false
+    $errorCount = 0
+    $warningCount = 0
+
+    foreach ($line in $buildOutput) {
+        $lineStr = $line.ToString()
+
+        # Log errors and warnings
+        if ($lineStr -match "error\s+[A-Z]+[0-9]+:") {
+            WriteStatus "[X] $lineStr"
+            $errorCount++
+        }
+        elseif ($lineStr -match "warning\s+[A-Z]+[0-9]+:") {
+            WriteStatus "[!] $lineStr"
+            $warningCount++
+        }
+        elseif ($lineStr -match "Build succeeded" -or $lineStr -match "Build FAILED") {
+            WriteStatus $lineStr
+            if ($lineStr -match "Build succeeded") {
+                $buildSuccess = $true
+            }
+        }
+        elseif ($lineStr -match "^\s+\d+\s+(Warning|Error)\(s\)") {
+            WriteStatus $lineStr
+        }
+    }
+
+    $progressBar.Value = 100
+    WriteStatus ""
+    WriteStatus "================================================"
+
+    if ($buildSuccess) {
+        WriteStatus "[OK] BUILD SUCCESSFUL!"
+        WriteStatus "================================================"
+
+        if ($warningCount -gt 0) {
+            WriteStatus "[!] Build completed with $warningCount warning(s)"
+        }
+
+        CheckModStatus
+
+        [System.Windows.Forms.MessageBox]::Show(
+            "Build completed successfully!`n`nMod DLL created at:`n$modDllPath`n`nYou can now install it to your game!",
+            "Build Successful",
+            'OK',
+            'Information'
+        )
+    }
+    else {
+        WriteStatus "[X] BUILD FAILED with $errorCount error(s)"
+        WriteStatus "================================================"
+
+        [System.Windows.Forms.MessageBox]::Show(
+            "Build failed with $errorCount error(s).`n`nCheck the log above for details.",
+            "Build Failed",
+            'OK',
+            'Error'
+        )
+    }
+
+    $progressBar.Value = 0
+}
+
 function CheckModStatus {
     $gtagPath = $gtagTextBox.Text
 
@@ -309,7 +429,7 @@ function CheckModStatus {
         $modLocationLabel.Text = "Built: $($modFileInfo.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss'))"
         $loadModButton.Enabled = $true
     } else {
-        $modLocationLabel.Text = "Build your mod first using build.bat (Option 2)"
+        $modLocationLabel.Text = "Click 'Build Mod' button to compile your mod"
         $loadModButton.Enabled = $false
     }
 
@@ -392,7 +512,7 @@ function InstallMod {
     if (-not (Test-Path $modDllPath)) {
         WriteStatus "ERROR: Mod DLL not found! Build your mod first."
         [System.Windows.Forms.MessageBox]::Show(
-            "Mod DLL not found!`n`nPlease build your mod first using build.bat (Option 2)",
+            "Mod DLL not found!`n`nPlease build your mod first using the 'Build Mod' button",
             "Mod Not Found",
             'OK',
             'Error'
@@ -836,10 +956,10 @@ function CopyDllFiles {
         WriteStatus "[OK] SUCCESS! All $successCount files copied!"
         WriteStatus "================================================"
         WriteStatus ""
-        WriteStatus ">> Next: Run build.bat to compile your mod!"
+        WriteStatus ">> Next: Click 'Build Mod' to compile your mod!"
 
         [System.Windows.Forms.MessageBox]::Show(
-            " All DLL files copied successfully! `n`n$successCount files copied`n`nYou can now run build.bat to compile your mod!",
+            "All DLL files copied successfully!`n`n$successCount files copied`n`nYou can now click 'Build Mod' to compile your mod!",
             "Setup Complete",
             'OK',
             'Information'
