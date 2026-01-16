@@ -2,6 +2,7 @@
 # Downloads the correct BepInEx 5.4.x development DLLs for compilation
 
 $ErrorActionPreference = "Stop"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "BepInEx Development DLL Installer" -ForegroundColor Cyan
@@ -10,8 +11,93 @@ Write-Host ""
 
 $libsPath = "libs"
 $tempPath = "temp_bepinex"
-$bepinexVersion = "5.4.23.2"
-$downloadUrl = "https://github.com/BepInEx/BepInEx/releases/download/v$bepinexVersion/BepInEx_x64_$bepinexVersion.zip"
+$bepinexVersion = "5.4.23.4"
+$releaseTag = "v$bepinexVersion"
+$downloadUrl = $null
+
+function Get-BepInExAssetInfo {
+    param (
+        [Parameter(Mandatory)]
+        [string]$Tag
+    )
+
+    $releaseApiUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases/tags/$Tag"
+    try {
+        $release = Invoke-RestMethod -Uri $releaseApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1"; "Accept" = "application/vnd.github+json" }
+    } catch {
+        return $null
+    }
+
+    $version = $Tag.TrimStart("v")
+    $assetNames = @(
+        "BepInEx_x64_$version_DEV.zip",
+        "BepInEx_x64_$version_dev.zip",
+        "BepInEx_x64_$version.zip"
+    )
+
+    $asset = $release.assets | Where-Object { $assetNames -contains $_.name } | Select-Object -First 1
+    if (-not $asset) {
+        return $null
+    }
+
+    return @{
+        Version = $version
+        Url = $asset.browser_download_url
+    }
+}
+
+function Get-LatestBepInEx54AssetInfo {
+    $releasesApiUrl = "https://api.github.com/repos/BepInEx/BepInEx/releases"
+    try {
+        $releases = Invoke-RestMethod -Uri $releasesApiUrl -Headers @{ "User-Agent" = "SmoreseyHudv1"; "Accept" = "application/vnd.github+json" }
+    } catch {
+        return $null
+    }
+
+    $release = $releases |
+        Where-Object { $_.tag_name -match "^v5\.4\." } |
+        Sort-Object -Property published_at -Descending |
+        Select-Object -First 1
+
+    if (-not $release) {
+        return $null
+    }
+
+    $version = $release.tag_name.TrimStart("v")
+    $assetNames = @(
+        "BepInEx_x64_$version_DEV.zip",
+        "BepInEx_x64_$version_dev.zip",
+        "BepInEx_x64_$version.zip"
+    )
+    $asset = $release.assets | Where-Object { $assetNames -contains $_.name } | Select-Object -First 1
+    if (-not $asset) {
+        return $null
+    }
+
+    return @{
+        Version = $version
+        Url = $asset.browser_download_url
+    }
+}
+
+$assetInfo = Get-BepInExAssetInfo -Tag $releaseTag
+if (-not $assetInfo) {
+    Write-Host "Preferred release $releaseTag not found. Searching for latest 5.4.x release..." -ForegroundColor Yellow
+    $assetInfo = Get-LatestBepInEx54AssetInfo
+}
+
+if (-not $assetInfo) {
+    Write-Host "ERROR: Could not locate a valid BepInEx 5.4.x development asset." -ForegroundColor Red
+    Write-Host "The source zip does not contain prebuilt DLLs needed for compilation." -ForegroundColor Yellow
+    Write-Host "Please download the 5.4.x DEV zip from the BepInEx releases page:" -ForegroundColor Yellow
+    Write-Host "https://github.com/BepInEx/BepInEx/releases" -ForegroundColor Cyan
+    Write-Host ""
+    pause
+    exit 1
+}
+
+$bepinexVersion = $assetInfo.Version
+$downloadUrl = $assetInfo.Url
 
 # Create libs folder if it doesn't exist
 if (-not (Test-Path $libsPath)) {
@@ -33,9 +119,7 @@ Write-Host ""
 $zipPath = Join-Path $tempPath "BepInEx.zip"
 
 try {
-    # Download with progress
-    $webClient = New-Object System.Net.WebClient
-    $webClient.DownloadFile($downloadUrl, $zipPath)
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -Headers @{ "User-Agent" = "SmoreseyHudv1" }
     Write-Host "Download complete!" -ForegroundColor Green
     Write-Host ""
 } catch {
@@ -63,14 +147,32 @@ try {
     exit 1
 }
 
-# Copy required DLLs from BepInEx\core
-$corePath = Join-Path $tempPath "BepInEx\core"
-if (-not (Test-Path $corePath)) {
-    Write-Host "ERROR: BepInEx\core folder not found in extracted files!" -ForegroundColor Red
+# Locate the BepInEx.dll that contains BaseUnityPlugin (development DLL)
+$bepinexDllPath = $null
+$candidateDlls = Get-ChildItem -Path $tempPath -Recurse -Filter "BepInEx.dll" -ErrorAction SilentlyContinue
+foreach ($candidate in $candidateDlls) {
+    try {
+        $assembly = [System.Reflection.Assembly]::LoadFrom($candidate.FullName)
+        if ($assembly.GetType("BepInEx.BaseUnityPlugin")) {
+            $bepinexDllPath = $candidate.FullName
+            break
+        }
+    } catch {
+        continue
+    }
+}
+
+if (-not $bepinexDllPath) {
+    Write-Host "ERROR: Could not find a development BepInEx.dll containing BaseUnityPlugin." -ForegroundColor Red
+    Write-Host "Make sure you are using a 5.4.x DEV zip from the BepInEx releases page." -ForegroundColor Yellow
+    Write-Host "https://github.com/BepInEx/BepInEx/releases" -ForegroundColor Cyan
     Write-Host ""
     pause
     exit 1
 }
+
+# Copy required DLLs from the folder containing BepInEx.dll
+$corePath = Split-Path -Path $bepinexDllPath -Parent
 
 Write-Host "Installing development DLLs to libs folder..." -ForegroundColor Yellow
 Write-Host ""
