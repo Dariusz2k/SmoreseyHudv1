@@ -1,2 +1,0 @@
-D:\ProgrammingStuff\GTagMenu\GTagSpeedMod\obj\Release\GTagSpeedMod.csproj.AssemblyReference.cache
-D:\ProgrammingStuff\GTagMenu\GTagSpeedMod\obj\Release\GTagSpeedMod.csproj.CoreCompileInputs.cache
