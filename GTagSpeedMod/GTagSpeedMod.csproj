@@ -41,5 +41,13 @@
       <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonVoice.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ExitGames.Client.Photon" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\ExitGames.Client.Photon.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\ExitGames.Client.Photon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonChat" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\PhotonChat.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonChat.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 </Project>

@@ -40,6 +40,8 @@ Required for accessing game-specific code and Photon networking:
 - `Photon3Unity3D.dll` - Photon Unity integration
 - `PhotonUnityNetworking.dll` - Photon PUN framework
 - `PhotonVoice.dll` - Photon voice chat library
+- `ExitGames.Client.Photon.dll` - ExitGames networking library
+- `PhotonChat.dll` - Photon chat functionality
 
 **Note**: These DLLs are located in your Gorilla Tag installation at:
 `[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
@@ -79,13 +81,16 @@ powershell -ExecutionPolicy Bypass -File setup-bepinex.ps1
 ### Build Error: "Unable to find package PhotonRealtime" or "Unable to find package PhotonVoice"
 - **Cause**: Photon DLLs are not available as NuGet packages
 - **Solution**:
-  1. Navigate to your Gorilla Tag installation: `[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
-  2. Copy these DLLs to the `libs/` folder:
+  1. Use the GTagManager GUI: Click "Copy Dev Libraries" button in Step 2
+  2. OR manually navigate to: `[Steam]\steamapps\common\Gorilla Tag\Gorilla Tag_Data\Managed\`
+  3. Copy these DLLs to the `libs/` folder:
      - PhotonRealtime.dll
      - Photon3Unity3D.dll
      - PhotonUnityNetworking.dll
      - PhotonVoice.dll
-  3. The project will now compile successfully
+     - ExitGames.Client.Photon.dll
+     - PhotonChat.dll
+  4. The project will now compile successfully
 
 ### BepInEx download fails
 - **Cause**: Network issues or GitHub rate limiting

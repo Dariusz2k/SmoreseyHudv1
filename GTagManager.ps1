@@ -905,7 +905,13 @@ function CopyDllFiles {
             "UnityEngine.InputLegacyModule.dll",
             "UnityEngine.IMGUIModule.dll",
             "Assembly-CSharp.dll",
-            "UnityEngine.UI.dll"
+            "UnityEngine.UI.dll",
+            "PhotonRealtime.dll",
+            "Photon3Unity3D.dll",
+            "PhotonUnityNetworking.dll",
+            "PhotonVoice.dll",
+            "ExitGames.Client.Photon.dll",
+            "PhotonChat.dll"
         )
 
         foreach ($dllName in $unityDllNames) {
