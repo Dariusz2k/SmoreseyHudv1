@@ -3,6 +3,21 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+
+// Photon imports
+using ExitGames.Client.Photon;
+using Photon.Realtime;
+using Photon.Pun;
+using Photon.Voice;
+using Photon.Voice.Unity;
+
+// Unity Windows imports (for DictationRecognizer)
+using UnityEngine.Windows.Speech;
+
+// System imports
+using System.IO;
+using System.Diagnostics;
 
 namespace GTagSpeedMod.Mods
 {
