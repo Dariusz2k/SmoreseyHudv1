@@ -41,6 +41,14 @@
       <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonVoice.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PhotonVoice.API" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\PhotonVoice.API.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonVoice.API.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PhotonVoice.PUN" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\PhotonVoice.PUN.dll')">
+      <HintPath>$(MSBuildThisFileDirectory)..\libs\PhotonVoice.PUN.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="ExitGames.Client.Photon" Condition="Exists('$(MSBuildThisFileDirectory)..\libs\ExitGames.Client.Photon.dll')">
       <HintPath>$(MSBuildThisFileDirectory)..\libs\ExitGames.Client.Photon.dll</HintPath>
       <Private>False</Private>

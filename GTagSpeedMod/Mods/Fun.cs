@@ -11,6 +11,7 @@ using Photon.Realtime;
 using Photon.Pun;
 using Photon.Voice;
 using Photon.Voice.Unity;
+using Photon.Voice.PUN;
 
 // Unity Windows imports (for DictationRecognizer)
 using UnityEngine.Windows.Speech;
