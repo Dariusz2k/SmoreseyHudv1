@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Photon.Pun;
@@ -52,6 +53,12 @@ namespace GTagSpeedMod.Mods
             // Stub: no implementation
         }
 
+        // GameObject finder
+        public static GameObject GetObject(string path)
+        {
+            return GameObject.Find(path);
+        }
+
         // Player/VRRig helpers
         public static Player GetPlayerFromVRRig(VRRig rig)
         {
@@ -83,10 +90,47 @@ namespace GTagSpeedMod.Mods
             Debug.Log($"[TTS Stub] {text}");
         }
 
-        // Account creation date stub
+        // Account creation date stub (overload for 1 parameter)
         public static string GetCreationDate(Player player)
         {
             return "Unknown"; // Stub
+        }
+
+        // Account creation date stub (overload for 2 parameters)
+        public static string GetCreationDate(Player player, string format)
+        {
+            return "Unknown"; // Stub
+        }
+
+        // Name changers
+        public static void ChangeName(string name)
+        {
+            // Stub: no implementation
+            Debug.Log($"[ChangeName Stub] {name}");
+        }
+
+        public static void ChangeColor(Color color)
+        {
+            // Stub: no implementation
+            Debug.Log($"[ChangeColor Stub] {color}");
+        }
+
+        // Random generators
+        public static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new System.Random();
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public static Color RandomColor()
+        {
+            return new Color(
+                UnityEngine.Random.Range(0f, 1f),
+                UnityEngine.Random.Range(0f, 1f),
+                UnityEngine.Random.Range(0f, 1f)
+            );
         }
 
         // Cosmetics helpers
@@ -102,10 +146,27 @@ namespace GTagSpeedMod.Mods
             // Stub: no implementation
         }
 
-        // Type helper stub
+        // Type helper stub (non-generic version)
         public static Type[] GetAllType(string typeName)
         {
             return new Type[0]; // Stub: returns empty array
+        }
+
+        // Generic type helper for finding all types of T
+        public static T[] GetAllType<T>() where T : UnityEngine.Object
+        {
+            return UnityEngine.Object.FindObjectsOfType<T>();
+        }
+
+        // GetIndex helper (stub with multiple overloads)
+        public static int GetIndex(string item)
+        {
+            return 0; // Stub
+        }
+
+        public static int GetIndex(string item, string[] array)
+        {
+            return Array.IndexOf(array, item);
         }
     }
 
@@ -138,6 +199,11 @@ namespace GTagSpeedMod.Mods
         {
             Debug.Log($"[Notification] {message}");
         }
+
+        public static void SendNotification(string message)
+        {
+            Debug.Log($"[Notification] {message}");
+        }
     }
 
     // Log Manager stub
@@ -158,6 +224,8 @@ namespace GTagSpeedMod.Mods
             Debug.Log("[CoroutineManager] StartCoroutine called (stub)");
             return null;
         }
+
+        public static CoroutineManager instance => null; // Stub instance
     }
 
     // File Utilities stub
@@ -173,6 +241,11 @@ namespace GTagSpeedMod.Mods
             {
                 Debug.LogError($"[FileUtilities] Error writing to file: {ex.Message}");
             }
+        }
+
+        public static string GetGamePath()
+        {
+            return Application.dataPath.Replace("/Gorilla Tag_Data", "");
         }
     }
 

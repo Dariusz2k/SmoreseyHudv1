@@ -35,6 +35,13 @@ namespace GTagSpeedMod.Mods
     {
         // Missing fields that are referenced in the code (stubs)
         private static float rightTrigger => ControllerInputPoller.instance.rightControllerIndexFloat;
+        private static bool leftGrab => ControllerInputPoller.instance.leftGrab;
+        private static bool rightGrab => ControllerInputPoller.instance.rightGrab;
+        private static bool leftPrimary => ControllerInputPoller.instance.leftControllerPrimaryButton;
+        private static bool rightPrimary => ControllerInputPoller.instance.rightControllerPrimaryButton;
+        private static bool leftSecondary => ControllerInputPoller.instance.leftControllerSecondaryButton;
+        private static bool rightSecondary => ControllerInputPoller.instance.rightControllerSecondaryButton;
+
         private static List<ButtonInfo> Buttons = new List<ButtonInfo>();
         private static int pageNumber = 0;
         private static string currentCategoryName = "";
