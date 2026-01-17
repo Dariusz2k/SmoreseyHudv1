@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 // Photon imports
 using ExitGames.Client.Photon;
@@ -20,6 +21,10 @@ using UnityEngine.Windows.Speech;
 using System.IO;
 using System.Diagnostics;
 
+// Import helper stubs
+using static GTagSpeedMod.Mods.FunHelpers;
+using static GTagSpeedMod.Mods.MathHelpers;
+
 namespace GTagSpeedMod.Mods
 {
     /// <summary>
@@ -28,6 +33,16 @@ namespace GTagSpeedMod.Mods
     /// </summary>
     public static class Fun
     {
+        // Missing fields that are referenced in the code (stubs)
+        private static float rightTrigger => ControllerInputPoller.instance.rightControllerIndexFloat;
+        private static List<ButtonInfo> Buttons = new List<ButtonInfo>();
+        private static int pageNumber = 0;
+        private static string currentCategoryName = "";
+        private static string[] CosmeticsOwned = new string[0];
+        private static bool TryOnRoom = false;
+        private static bool CosmeticPatch = false;
+        private static Action PostGetData = null;
+
         public static void FixHead()
         {
             VRRig.LocalRig.head.trackingRotationOffset.x = 0f;
@@ -122,7 +137,7 @@ namespace GTagSpeedMod.Mods
 
         public static void SpazHead(string axis)
         {
-            int offset = Random.Range(0, 360);
+            int offset = UnityEngine.Random.Range(0, 360);
             switch (axis.ToLower())
             {
                 case "x":
@@ -646,7 +661,7 @@ namespace GTagSpeedMod.Mods
         {
             bool isTagged = VRRig.LocalRig.IsTagged();
 
-            if (isTagged && !wasTagged && Random.Range(0, 2000) == 1)
+            if (isTagged && !wasTagged && UnityEngine.Random.Range(0, 2000) == 1)
                 Jumpscare();
 
             wasTagged = isTagged;
@@ -1191,7 +1206,7 @@ namespace GTagSpeedMod.Mods
                 spamDelay = Time.time + 0.1f;
                 returnOrTeleport = !returnOrTeleport;
 
-                GetObject("City_Pretty/CosmeticsScoreboardAnchor/Arcade_prefab/MainRoom/VRArea/ModIOArcadeTeleporter/NetObject_VRTeleporter").GetComponent<PhotonView>().RPC("ActivateTeleportVFX", RpcTarget.All, returnOrTeleport, (short)Random.Range(0, 7));
+                GetObject("City_Pretty/CosmeticsScoreboardAnchor/Arcade_prefab/MainRoom/VRArea/ModIOArcadeTeleporter/NetObject_VRTeleporter").GetComponent<PhotonView>().RPC("ActivateTeleportVFX", RpcTarget.All, returnOrTeleport, (short)UnityEngine.Random.Range(0, 7));
                 RPCProtection();
             }
         }
@@ -1282,7 +1297,7 @@ namespace GTagSpeedMod.Mods
         public static void FakeFPS()
         {
             FPSPatch.enabled = true;
-            FPSPatch.spoofFPSValue = Random.Range(0, 255);
+            FPSPatch.spoofFPSValue = UnityEngine.Random.Range(0, 255);
         }
 
         
@@ -1317,7 +1332,7 @@ namespace GTagSpeedMod.Mods
         {
             if (Time.time > purchaseDelay)
             {
-                ManagerRegistry.GhostReactor.GhostReactorManager.ToolPurchaseStationRequest(Random.Range(0, ManagerRegistry.GhostReactor.GhostReactorManager.reactor.toolPurchasingStations.Count - 1), GhostReactorManager.ToolPurchaseStationAction.TryPurchase);
+                ManagerRegistry.GhostReactor.GhostReactorManager.ToolPurchaseStationRequest(UnityEngine.Random.Range(0, ManagerRegistry.GhostReactor.GhostReactorManager.reactor.toolPurchasingStations.Count - 1), GhostReactorManager.ToolPurchaseStationAction.TryPurchase);
                 purchaseDelay = Time.time + 0.1f;
             }
         }
@@ -1629,7 +1644,7 @@ namespace GTagSpeedMod.Mods
         {
             if (Time.time > purchaseDelay)
             {
-                ManagerRegistry.GhostReactor.GhostReactorManager.ToolPurchaseStationRequest(Random.Range(0, ManagerRegistry.GhostReactor.GhostReactorManager.reactor.toolPurchasingStations.Count - 1), (GhostReactorManager.ToolPurchaseStationAction)Random.Range(0, 2));
+                ManagerRegistry.GhostReactor.GhostReactorManager.ToolPurchaseStationRequest(UnityEngine.Random.Range(0, ManagerRegistry.GhostReactor.GhostReactorManager.reactor.toolPurchasingStations.Count - 1), (GhostReactorManager.ToolPurchaseStationAction)UnityEngine.Random.Range(0, 2));
                 purchaseDelay = Time.time + 0.1f;
             }
         }
@@ -1859,7 +1874,7 @@ namespace GTagSpeedMod.Mods
 
         public static void SaveNarration(string text)
         {
-            string path = $"{PluginInfo.BaseDirectory}/Sounds/Narrations";
+            string path = $"{PluginInfoExtensions.GetBaseDirectory()}/Sounds/Narrations";
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             CoroutineManager.instance.StartCoroutine(TranscribeText(text, (audio) =>
@@ -2130,7 +2145,7 @@ Piece Name: {gunTarget.name}";
         public static int GetRandomBlockType()
         {
             int[] blockTypes = GetAllBlockTypes();
-            return blockTypes[Random.Range(0, blockTypes.Length)];
+            return blockTypes[UnityEngine.Random.Range(0, blockTypes.Length)];
         }
 
         public static void BlockBrowser()
@@ -2198,7 +2213,7 @@ Piece Name: {gunTarget.name}";
                 GrowingSnowballThrowable Snowball = GetProjectile($"{Projectiles.SnowballName}LeftAnchor") as GrowingSnowballThrowable;
                 Snowball.randomizeColor = true;
                 Snowball.SetSnowballActiveLocal(true);
-                Snowball.SetSizeLevelAuthority(Random.Range(1, 6));
+                Snowball.SetSizeLevelAuthority(UnityEngine.Random.Range(1, 6));
             }
 
             if (rightGrab)
@@ -2206,7 +2221,7 @@ Piece Name: {gunTarget.name}";
                 GrowingSnowballThrowable Snowball = GetProjectile($"{Projectiles.SnowballName}RightAnchor") as GrowingSnowballThrowable;
                 Snowball.randomizeColor = true;
                 Snowball.SetSnowballActiveLocal(true);
-                Snowball.SetSizeLevelAuthority(Random.Range(1, 6));
+                Snowball.SetSizeLevelAuthority(UnityEngine.Random.Range(1, 6));
             }
         }
 
@@ -3715,7 +3730,7 @@ Piece Name: {gunTarget.name}";
 
                 for (int i = 0; i < 100; i++)
                 {
-                    BuilderPiece piece = totalPieces[Random.Range(0, totalPieces.Length)];
+                    BuilderPiece piece = totalPieces[UnityEngine.Random.Range(0, totalPieces.Length)];
                     if (piece.gameObject.activeSelf)
                         RequestRecyclePiece(piece, true, 2);
                 }
@@ -3724,7 +3739,7 @@ Piece Name: {gunTarget.name}";
 
         public static void SaveBuilderTableData()
         {
-            string fileName = $"{PluginInfo.BaseDirectory}/BuilderTableData.json";
+            string fileName = $"{PluginInfoExtensions.GetBaseDirectory()}/BuilderTableData.json";
 
             File.WriteAllText(fileName, ManagerRegistry.BuilderTable.WriteTableToJson());
 
@@ -3734,7 +3749,7 @@ Piece Name: {gunTarget.name}";
 
         public static void LoadBuilderTableData()
         {
-            string fileName = $"{PluginInfo.BaseDirectory}/BuilderTableData.json";
+            string fileName = $"{PluginInfoExtensions.GetBaseDirectory()}/BuilderTableData.json";
 
             if (!File.Exists(fileName))
                 return;
@@ -4217,7 +4232,7 @@ Piece Name: {gunTarget.name}";
                     else
                     {
                         floatPower += (0.3f - floatPower) * 0.05f;
-                        RequestCreatePiece(-566818631, lockTarget.transform.position + Vector3.down * floatPower, Quaternion.Euler(0f, Random.Range(0f, 350f), 0f), 0, NetPlayerToPlayer(GetPlayerFromVRRig(lockTarget)), true);
+                        RequestCreatePiece(-566818631, lockTarget.transform.position + Vector3.down * floatPower, Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 350f), 0f), 0, NetPlayerToPlayer(GetPlayerFromVRRig(lockTarget)), true);
                         RPCProtection();
                     }
                 }
@@ -4273,7 +4288,7 @@ Piece Name: {gunTarget.name}";
 
             isFiring = true;
 
-            if (!File.Exists($"{PluginInfo.BaseDirectory}/shotgun.wav"))
+            if (!File.Exists($"{PluginInfoExtensions.GetBaseDirectory()}/shotgun.wav"))
                 LoadSoundFromURL($"{PluginInfo.ServerResourcePath}/Audio/Mods/Fun/shotgun.ogg", "Audio/Mods/Fun/shotgun.ogg");
 
             Sound.PlayAudio("shotgun.wav");
@@ -4594,7 +4609,7 @@ Piece Name: {gunTarget.name}";
 
         public static void RainBuildingBlocks()
         {
-            RequestCreatePiece(pieceIdSet, VRRig.LocalRig.transform.position + new Vector3(Random.Range(-3f, 3f), 4f, Random.Range(-3f, 3f)), Quaternion.identity, 0);
+            RequestCreatePiece(pieceIdSet, VRRig.LocalRig.transform.position + new Vector3(UnityEngine.Random.Range(-3f, 3f), 4f, UnityEngine.Random.Range(-3f, 3f)), Quaternion.identity, 0);
             RPCProtection();
         }
 
@@ -5230,7 +5245,7 @@ Piece Name: {gunTarget.name}";
             foreach (MonkeyeAI monkeyeAI in GetAllType<MonkeyeAI>())
             {
                 if (!NetworkSystem.Instance.IsMasterClient) { NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You are not master client."); return; }
-                monkeyeAI.transform.rotation = Quaternion.Euler(new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360)));
+                monkeyeAI.transform.rotation = Quaternion.Euler(new Vector3(UnityEngine.Random.Range(0, 360), UnityEngine.Random.Range(0, 360), UnityEngine.Random.Range(0, 360)));
             }
         }
 
@@ -5367,7 +5382,7 @@ Piece Name: {gunTarget.name}";
             foreach (BalloonHoldable balloon in GetAllType<BalloonHoldable>())
             {
                 if (balloon.ownerRig.isLocal)
-                    balloon.gameObject.transform.rotation = Quaternion.Euler(new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360)));
+                    balloon.gameObject.transform.rotation = Quaternion.Euler(new Vector3(UnityEngine.Random.Range(0, 360), UnityEngine.Random.Range(0, 360), UnityEngine.Random.Range(0, 360)));
                 else
                     balloon.WorldShareableRequestOwnership();
             }
@@ -5512,10 +5527,10 @@ Piece Name: {gunTarget.name}";
         public static string[] names = { };
         public static void EnableCustomNameCycle()
         {
-            if (File.Exists($"{PluginInfo.BaseDirectory}/iiMenu_CustomNameCycle.txt"))
-                names = File.ReadAllText($"{PluginInfo.BaseDirectory}/iiMenu_CustomNameCycle.txt").Split('\n');
+            if (File.Exists($"{PluginInfoExtensions.GetBaseDirectory()}/iiMenu_CustomNameCycle.txt"))
+                names = File.ReadAllText($"{PluginInfoExtensions.GetBaseDirectory()}/iiMenu_CustomNameCycle.txt").Split('\n');
             else
-                File.WriteAllText($"{PluginInfo.BaseDirectory}/iiMenu_CustomNameCycle.txt","YOUR\nTEXT\nHERE");
+                File.WriteAllText($"{PluginInfoExtensions.GetBaseDirectory()}/iiMenu_CustomNameCycle.txt","YOUR\nTEXT\nHERE");
         }
 
         public static float colorChangerDelay;
@@ -5594,7 +5609,7 @@ Piece Name: {gunTarget.name}";
                 Color.magenta
             };
 
-            BecomePlayer(names[Random.Range(0, names.Length)], colors[Random.Range(0, colors.Length)]);
+            BecomePlayer(names[UnityEngine.Random.Range(0, names.Length)], colors[UnityEngine.Random.Range(0, colors.Length)]);
         }
 
         public static float stealIdentityDelay;
@@ -5831,12 +5846,12 @@ Piece Name: {gunTarget.name}";
             {
                 delay = Time.time + 0.05f;
                 string[] owned = VRRig.LocalRig.inTryOnRoom ? GetTryOnCosmetics() : GetOwnedCosmetics();
-                int amnt = Math.Clamp(owned.Length, 0, 15);
+                int amnt = Clamp(owned.Length, 0, 15);
                 if (amnt > 0)
                 {
                     List<string> randomCosmetics = new List<string>();
                     for (int i = 0; i <= amnt; i++)
-                        randomCosmetics.Add(owned[Random.Range(0, owned.Length)]);
+                        randomCosmetics.Add(owned[UnityEngine.Random.Range(0, owned.Length)]);
                     
                     if (VRRig.LocalRig.inTryOnRoom)
                     {
@@ -5860,12 +5875,12 @@ Piece Name: {gunTarget.name}";
             {
                 delay = Time.time + 0.05f;
                 string[] owned = VRRig.LocalRig.inTryOnRoom ? GetTryOnBalloons() : GetOwnedBalloons();
-                int amnt = Math.Clamp(owned.Length, 0, 15);
+                int amnt = Clamp(owned.Length, 0, 15);
                 if (amnt > 0)
                 {
                     List<string> randomCosmetics = new List<string>();
                     for (int i = 0; i <= amnt; i++)
-                        randomCosmetics.Add(owned[Random.Range(0, owned.Length)]);
+                        randomCosmetics.Add(owned[UnityEngine.Random.Range(0, owned.Length)]);
 
                     if (VRRig.LocalRig.inTryOnRoom)
                     {
@@ -5889,12 +5904,12 @@ Piece Name: {gunTarget.name}";
             {
                 delay = Time.time + 0.05f;
                 string[] owned = VRRig.LocalRig.inTryOnRoom ? GetTryOnCosmetics() : GetOwnedCosmetics();
-                int amnt = Math.Clamp(owned.Length, 0, 15);
+                int amnt = Clamp(owned.Length, 0, 15);
                 if (amnt > 0)
                 {
                     List<string> randomCosmetics = new List<string>();
                     for (int i = 0; i <= amnt; i++)
-                        randomCosmetics.Add(owned[Random.Range(0, owned.Length)]);
+                        randomCosmetics.Add(owned[UnityEngine.Random.Range(0, owned.Length)]);
                     if (VRRig.LocalRig.inTryOnRoom)
                     {
                         CosmeticsController.instance.tryOnSet = new CosmeticsController.CosmeticSet(randomCosmetics.ToArray(), CosmeticsController.instance);
@@ -6297,7 +6312,7 @@ Piece Name: {gunTarget.name}";
                     if (gunTarget && !gunTarget.IsLocal())
                     {
                         idgundelay = Time.time + 0.5f;
-                        SpeakText("Name: " + GetPlayerFromVRRig(gunTarget).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}"));
+                        SpeakText("Name: " + GetPlayerFromVRRig(gunTarget).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}"));
                     }
                 }
             }
@@ -6309,7 +6324,7 @@ Piece Name: {gunTarget.name}";
             foreach (VRRig vrrig in GorillaParent.instance.vrrigs)
             {
                 if (!vrrig.isLocal)
-                    ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}") + ". ";
+                    ids += "Name: " + GetPlayerFromVRRig(vrrig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}") + ". ";
             }
             SpeakText(ids);
         }
@@ -6331,7 +6346,7 @@ Piece Name: {gunTarget.name}";
             {
                 foreach (VRRig nearbyPlayer in nearbyPlayers)
                 {
-                    SpeakText("Name: " + GetPlayerFromVRRig(nearbyPlayer).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}"));
+                    SpeakText("Name: " + GetPlayerFromVRRig(nearbyPlayer).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}"));
                 }
             }
         }
@@ -6358,13 +6373,13 @@ Piece Name: {gunTarget.name}";
             {
                 foreach (VRRig rig in touchedPlayers)
                 {
-                    SpeakText("Name: " + GetPlayerFromVRRig(rig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}"));
+                    SpeakText("Name: " + GetPlayerFromVRRig(rig).NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}"));
                 }
             }
         }
 
         public static void NarrateFakeDoxxSelf() =>
-            SpeakText("Name: " + PhotonNetwork.LocalPlayer.NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{Random.Range(1, 255)}.{Random.Range(1, 255)}.{Random.Range(1, 255)}"));
+            SpeakText("Name: " + PhotonNetwork.LocalPlayer.NickName + ". I P  ADD DRESS: " + string.Join(" ", $"{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}.{UnityEngine.Random.Range(1, 255)}"));
 
         private static float cgdgd;
         public static void CopyCreationDateSelf()
@@ -6584,7 +6599,7 @@ Piece Name: {gunTarget.name}";
             }
             text += "\n====================================\n";
             text += "Text file generated with ii's Stupid Menu";
-            string fileName = $"{PluginInfo.BaseDirectory}/PlayerInfo/" + PhotonNetwork.CurrentRoom.Name + ".txt";
+            string fileName = $"{PluginInfoExtensions.GetBaseDirectory()}/PlayerInfo/" + PhotonNetwork.CurrentRoom.Name + ".txt";
 
             File.WriteAllText(fileName, text);
 
