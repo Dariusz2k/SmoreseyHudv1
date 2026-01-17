@@ -215,17 +215,17 @@ namespace GTagSpeedMod.Mods
         }
     }
 
-    // Coroutine Manager stub
-    public static class CoroutineManager
+    // Coroutine Manager stub (non-static class with singleton pattern)
+    public class CoroutineManager
     {
-        public static Coroutine StartCoroutine(IEnumerator coroutine)
+        public static CoroutineManager instance => null; // Stub instance
+
+        public Coroutine StartCoroutine(IEnumerator coroutine)
         {
             // Stub: returns null
             Debug.Log("[CoroutineManager] StartCoroutine called (stub)");
             return null;
         }
-
-        public static CoroutineManager instance => null; // Stub instance
     }
 
     // File Utilities stub
