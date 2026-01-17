@@ -12,15 +12,16 @@ namespace GTagSpeedMod
         private Rect menuRect = new Rect(20, 20, 350, 500);
         private bool showMenu = false;
 
-        // Menu manager
+        // Menu managers
         private MenuManager menuManager;
+        private VRMenuManager vrMenuManager;
 
         // This runs when your mod loads
         void Awake()
         {
             Logger.LogInfo("GTag Speed Mod has loaded!");
 
-            // Initialize the menu manager
+            // Initialize the menu manager (PC menu)
             try
             {
                 menuManager = new MenuManager();
@@ -29,6 +30,20 @@ namespace GTagSpeedMod
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to initialize Menu Manager: {ex.Message}");
+            }
+
+            // Initialize the VR menu manager (In-headset menu)
+            try
+            {
+                GameObject vrMenuObj = new GameObject("VRMenuManager");
+                vrMenuManager = vrMenuObj.AddComponent<VRMenuManager>();
+                vrMenuManager.Initialize();
+                DontDestroyOnLoad(vrMenuObj);
+                Logger.LogInfo("VR Menu Manager initialized successfully!");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to initialize VR Menu Manager: {ex.Message}");
             }
         }
 
