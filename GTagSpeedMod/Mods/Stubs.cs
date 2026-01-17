@@ -175,7 +175,7 @@ namespace GTagSpeedMod.Mods
     {
         public static bool IsLocal(this VRRig rig)
         {
-            return rig == GorillaTagger.Instance.myVRRig;
+            return false;
         }
 
         public static bool IsTagged(this VRRig rig)
