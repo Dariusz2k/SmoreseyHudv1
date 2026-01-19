@@ -2,6 +2,7 @@ using BepInEx;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using GTagSpeedMod.Managers;
 
 namespace GTagSpeedMod
 {
@@ -69,13 +70,39 @@ namespace GTagSpeedMod
         private bool? originalFog;
         private Color? originalFogColor;
         private float originalFogDensity;
+        private bool hasLoggedOnGUI;
+        private bool hasLoggedHandMenuAttempt;
         
         // This runs when your mod loads
         void Awake()
         {
-            Logger.LogInfo("GTag Mod Menu has loaded!");
+            Logger.LogInfo("========================================");
+            Logger.LogInfo("GTag Mod Menu v1.1.0 Loading...");
+            Logger.LogInfo("========================================");
+
+            Logger.LogInfo("Searching for hand anchor...");
             TryFindHandAnchor();
+
+            if (handAnchor != null)
+            {
+                Logger.LogInfo($"[SUCCESS] Hand anchor found: {handAnchor.name}");
+            }
+            else
+            {
+                Logger.LogWarning("[WARNING] Hand anchor not found - will retry every 2 seconds");
+                Logger.LogInfo("Hand menu will not be available until hand anchor is found");
+            }
+
+            Logger.LogInfo("Building menu styles...");
             BuildMenuStyles();
+
+            Logger.LogInfo("========================================");
+            Logger.LogInfo("GTag Mod Menu loaded successfully!");
+            Logger.LogInfo("Press F1, Y, or B to toggle menu");
+            Logger.LogInfo("========================================");
+
+            // Log initial state
+            LogDebugState("Initial startup");
         }
         
         // This runs every frame
@@ -101,6 +128,15 @@ namespace GTagSpeedMod
         // This draws the UI on screen
         void OnGUI()
         {
+            if (!hasLoggedOnGUI)
+            {
+                Logger.LogInfo("[OnGUI] First OnGUI call - rendering system is active");
+                hasLoggedOnGUI = true;
+            }
+
+            // Always draw notifications, even when menu is hidden
+            NotificationManager.DrawNotifications();
+
             if (!showMenu)
             {
                 return;
@@ -113,13 +149,18 @@ namespace GTagSpeedMod
 
             if (TryGetHandMenuRect(out var handRect))
             {
+                if (!hasLoggedHandMenuAttempt)
+                {
+                    Logger.LogInfo($"[OnGUI] Rendering hand menu at screen position: {handRect}");
+                    hasLoggedHandMenuAttempt = true;
+                }
                 GUI.Window(1, handRect, DrawMenu, "GTag Mod Menu");
                 return;
             }
 
             if (showMenu)
             {
-                // Create a window for our menu
+                // Create a window for our menu (fallback mode - not anchored to hand)
                 menuRect = GUI.Window(0, menuRect, DrawMenu, "GTag Mod Menu");
             }
         }
@@ -205,8 +246,11 @@ namespace GTagSpeedMod
 
         private void TryFindHandAnchor()
         {
+            Logger.LogInfo("[HandAnchor] Attempting to find hand anchor...");
+
             if (TryFindHandFromGorillaTagger())
             {
+                Logger.LogInfo("[HandAnchor] Found via GorillaTagger reflection");
                 return;
             }
 
@@ -214,6 +258,7 @@ namespace GTagSpeedMod
             if (rightHand != null)
             {
                 handAnchor = rightHand.transform;
+                Logger.LogInfo("[HandAnchor] Found 'RightHand Controller'");
                 return;
             }
 
@@ -221,6 +266,7 @@ namespace GTagSpeedMod
             if (rightHandAnchor != null)
             {
                 handAnchor = rightHandAnchor.transform;
+                Logger.LogInfo("[HandAnchor] Found 'RightHandAnchor'");
                 return;
             }
 
@@ -228,6 +274,7 @@ namespace GTagSpeedMod
             if (rightHandTransform != null)
             {
                 handAnchor = rightHandTransform.transform;
+                Logger.LogInfo("[HandAnchor] Found 'RightHand'");
                 return;
             }
 
@@ -235,12 +282,16 @@ namespace GTagSpeedMod
             if (rightHandNode != null)
             {
                 handAnchor = rightHandNode.transform;
+                Logger.LogInfo("[HandAnchor] Found 'PlayerRightHand'");
                 return;
             }
 
+            Logger.LogInfo("[HandAnchor] Named objects not found, searching all transforms...");
 #pragma warning disable CS0618
             var transforms = GameObject.FindObjectsOfType<Transform>();
 #pragma warning restore CS0618
+            Logger.LogInfo($"[HandAnchor] Found {transforms.Length} total transforms in scene");
+
             foreach (var transform in transforms)
             {
                 if (transform == null)
@@ -258,9 +309,12 @@ namespace GTagSpeedMod
                     && name.IndexOf("hand", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found via fallback search: {name}");
                     return;
                 }
             }
+
+            Logger.LogWarning("[HandAnchor] No hand anchor found after searching all methods");
         }
 
         private bool TryFindHandFromGorillaTagger()
@@ -456,10 +510,25 @@ namespace GTagSpeedMod
             var handName = handAnchor != null ? handAnchor.name : "None";
             var inputPollerName = inputPollerType != null ? inputPollerType.FullName : "None";
 
-            Logger.LogInfo($"[Debug] {reason}");
+            Logger.LogInfo($"[Debug] ========== {reason} ==========");
+            Logger.LogInfo($"[Debug] Menu Visible: {showMenu}");
             Logger.LogInfo($"[Debug] HandAnchor: {handName}");
             Logger.LogInfo($"[Debug] Camera: {cameraName}");
             Logger.LogInfo($"[Debug] InputPoller: {inputPollerName}");
+            Logger.LogInfo($"[Debug] OnGUI Called: {hasLoggedOnGUI}");
+            Logger.LogInfo($"[Debug] Hand Menu Attempted: {hasLoggedHandMenuAttempt}");
+
+            if (handAnchor != null)
+            {
+                Logger.LogInfo($"[Debug] Hand Position: {handAnchor.position}");
+            }
+
+            if (camera != null)
+            {
+                Logger.LogInfo($"[Debug] Camera Position: {camera.transform.position}");
+            }
+
+            Logger.LogInfo($"[Debug] =====================================");
         }
 
         private bool IsMenuTogglePressed()
