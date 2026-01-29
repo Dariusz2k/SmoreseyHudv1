@@ -1,4 +1,89 @@
 @echo off
+title GTag Mod Menu
+color 0A
+
+:MENU
+cls
+echo ========================================
+echo        GTag Mod Development Menu
+echo ========================================
+echo.
+echo 1. Pull Latest Code from Git
+echo 2. Build/Compile Mod
+echo 3. Launch GTag Manager
+echo 4. Exit
+echo.
+echo ========================================
+echo.
+set /p choice="Enter your choice (1-4): "
+
+if "%choice%"=="1" goto PULL_CODE
+if "%choice%"=="2" goto BUILD_MOD
+if "%choice%"=="3" goto LAUNCH_MANAGER
+if "%choice%"=="4" goto EXIT_SCRIPT
+echo Invalid choice! Please try again.
+timeout /t 2 >nul
+goto MENU
+
+REM ========================================
+REM OPTION 1: Pull Latest Code
+REM ========================================
+:PULL_CODE
+cls
+echo ========================================
+echo Pulling Latest Code from Git
+echo ========================================
+echo.
+
+REM Check if git is available
+where git >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Git is not installed or not in PATH!
+    echo Please install Git for Windows from https://git-scm.com/
+    echo.
+    pause
+    goto MENU
+)
+
+REM Get current branch
+for /f "tokens=*" %%b in ('git rev-parse --abbrev-ref HEAD 2^>nul') do set CURRENT_BRANCH=%%b
+
+if not defined CURRENT_BRANCH (
+    echo ERROR: Not in a git repository!
+    echo.
+    pause
+    goto MENU
+)
+
+echo Current branch: %CURRENT_BRANCH%
+echo.
+echo Fetching latest changes...
+git fetch origin
+
+echo.
+echo Pulling changes for branch: %CURRENT_BRANCH%
+git pull origin %CURRENT_BRANCH%
+
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo ========================================
+    echo Pull completed successfully!
+    echo ========================================
+) else (
+    echo.
+    echo ========================================
+    echo Pull failed! Check errors above.
+    echo ========================================
+)
+echo.
+pause
+goto MENU
+
+REM ========================================
+REM OPTION 2: Build/Compile Mod
+REM ========================================
+:BUILD_MOD
+cls
 echo ========================================
 echo Building GTag Speed Mod
 echo ========================================
@@ -11,8 +96,9 @@ if not exist "%VSWHERE%" (
     echo ERROR: vswhere.exe not found!
     echo Visual Studio installer may not be present.
     echo Please reinstall Visual Studio with .NET desktop development workload
+    echo.
     pause
-    exit /b 1
+    goto MENU
 )
 
 REM Find the installation path of the latest Visual Studio
@@ -23,8 +109,9 @@ for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Mi
 if not defined VS_PATH (
     echo ERROR: Visual Studio installation not found!
     echo Please make sure Visual Studio is installed with .NET desktop development workload
+    echo.
     pause
-    exit /b 1
+    goto MENU
 )
 
 REM Construct MSBuild path
@@ -33,17 +120,74 @@ set MSBUILD_PATH="%VS_PATH%\MSBuild\Current\Bin\MSBuild.exe"
 if not exist %MSBUILD_PATH% (
     echo ERROR: MSBuild not found at expected location!
     echo Expected: %MSBUILD_PATH%
+    echo.
     pause
-    exit /b 1
+    goto MENU
 )
 
 echo Found Visual Studio at: %VS_PATH%
 echo Found MSBuild at: %MSBUILD_PATH%
 echo.
 
+REM Validate libs folder and required DLLs
+echo Checking for required dependencies...
+echo Current directory: %CD%
+echo.
+
+if not exist "libs" (
+    echo ERROR: libs folder not found!
+    echo Please ensure the libs folder exists with required DLLs
+    echo Expected location: %CD%\libs
+    echo.
+    echo TIP: Use option 3 to launch GTag Manager and setup BepInEx DLLs
+    echo.
+    pause
+    goto MENU
+)
+
+echo Found libs folder at: %CD%\libs
+echo Contents:
+dir /b libs\*.dll
+echo.
+
+if not exist "libs\BepInEx.dll" (
+    echo ERROR: BepInEx.dll not found in libs folder!
+    echo Please ensure BepInEx.dll is in the libs folder
+    echo.
+    echo TIP: Use option 3 to launch GTag Manager and setup BepInEx DLLs
+    echo.
+    pause
+    goto MENU
+)
+
+if not exist "libs\UnityEngine.dll" (
+    echo ERROR: UnityEngine.dll not found in libs folder!
+    echo Please ensure UnityEngine.dll is in the libs folder
+    echo.
+    echo TIP: Use option 3 to launch GTag Manager and setup BepInEx DLLs
+    echo.
+    pause
+    goto MENU
+)
+
+if not exist "libs\UnityEngine.CoreModule.dll" (
+    echo ERROR: UnityEngine.CoreModule.dll not found in libs folder!
+    echo Please ensure UnityEngine.CoreModule.dll is in the libs folder
+    echo.
+    echo TIP: Use option 3 to launch GTag Manager and setup BepInEx DLLs
+    echo.
+    pause
+    goto MENU
+)
+
+echo All required DLLs found.
+echo.
+
 REM Build the project
 echo Building project...
-%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal
+echo Running: MSBuild GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release
+echo.
+%MSBUILD_PATH% GTagSpeedMod\GTagSpeedMod.csproj /p:Configuration=Release /v:minimal /fl /flp:logfile=build.log;verbosity=diagnostic
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -57,6 +201,8 @@ if %ERRORLEVEL% EQU 0 (
     echo Copy this file to:
     echo [Gorilla Tag Folder]\BepInEx\plugins\
     echo.
+    echo Detailed build log saved to: build.log
+    echo.
 ) else (
     echo.
     echo ========================================
@@ -64,6 +210,61 @@ if %ERRORLEVEL% EQU 0 (
     echo ========================================
     echo Check the error messages above
     echo.
+    echo A detailed build log has been saved to: build.log
+    echo This log contains diagnostic information to help troubleshoot the issue
+    echo.
+)
+pause
+goto MENU
+
+REM ========================================
+REM OPTION 3: Launch GTag Manager
+REM ========================================
+:LAUNCH_MANAGER
+cls
+echo ========================================
+echo Launching GTag Manager
+echo ========================================
+echo.
+
+if not exist "GTagManager.ps1" (
+    echo ERROR: GTagManager.ps1 not found!
+    echo Expected location: %CD%\GTagManager.ps1
+    echo.
+    pause
+    goto MENU
 )
 
-pause
+echo Starting PowerShell GUI Manager...
+echo This will help you setup BepInEx and extract required DLLs.
+echo.
+echo Press any key to launch...
+pause >nul
+
+REM Launch PowerShell script
+powershell.exe -ExecutionPolicy Bypass -File "%CD%\GTagManager.ps1"
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo WARNING: GTag Manager closed or encountered an error.
+    echo.
+)
+
+echo.
+echo Returning to menu...
+timeout /t 2 >nul
+goto MENU
+
+REM ========================================
+REM OPTION 4: Exit
+REM ========================================
+:EXIT_SCRIPT
+cls
+echo ========================================
+echo Exiting GTag Mod Menu
+echo ========================================
+echo.
+echo Thank you for using GTag Mod Development Menu!
+echo.
+timeout /t 2 >nul
+exit /b 0

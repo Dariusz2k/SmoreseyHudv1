@@ -1,0 +1,32 @@
+# Build output
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+
+# MSBuild log
+build.log
+msbuild.log
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Exclude libs folder from gitignore - we want to keep DLLs there
+!libs/
+!libs/*.dll
