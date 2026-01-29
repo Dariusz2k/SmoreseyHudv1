@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using GTagSpeedMod.Managers;
+using GTagSpeedMod.Mods;
 
 namespace GTagSpeedMod
 {
@@ -25,6 +26,42 @@ namespace GTagSpeedMod
 
         private readonly MenuOption[] options =
         {
+            // Tag Features
+            new MenuOption("Tag Self", "Tag yourself"),
+            new MenuOption("Untag Self", "Remove tag from self"),
+            new MenuOption("Anti Tag", "Prevent being tagged"),
+            new MenuOption("Tag All", "Tag all players"),
+            new MenuOption("Untag All", "Untag all players"),
+            new MenuOption("Tag Aura", "Auto-tag nearby players"),
+            new MenuOption("Tag Reach", "Extended tag reach"),
+            new MenuOption("Tag Gun", "Gun-based tagging"),
+            new MenuOption("Tag Bot", "Automated tagging"),
+            new MenuOption("Instant Tag Gun", "Instant gun tagging"),
+
+            // Advanced Tag
+            new MenuOption("Spam Tag Self", "Rapid tag toggle self"),
+            new MenuOption("Spam Tag Gun", "Rapid gun tag toggle"),
+            new MenuOption("Spam Tag All", "Rapid tag all toggle"),
+            new MenuOption("Tag Lag Gun", "Tag lag gun"),
+            new MenuOption("Give Tag Lag Gun", "Give invincibility gun"),
+            new MenuOption("Untag Gun", "Gun to untag players"),
+            new MenuOption("Flick Tag Gun", "Flick-based tag gun"),
+            new MenuOption("Report Anti Tag", "Anti-tag via serialization"),
+
+            // Paintbrawl
+            new MenuOption("PB Start Game", "Start paintbrawl"),
+            new MenuOption("PB End Game", "End paintbrawl"),
+            new MenuOption("PB Restart Game", "Restart paintbrawl"),
+            new MenuOption("PB Balloon Spam", "Spam balloon health"),
+            new MenuOption("PB Kill Gun", "Kill player with gun"),
+            new MenuOption("PB Kill Self", "Kill yourself"),
+            new MenuOption("PB Kill All", "Kill all players"),
+            new MenuOption("PB Revive Gun", "Revive with gun"),
+            new MenuOption("PB Revive All", "Revive all players"),
+            new MenuOption("PB God Mode", "Invincibility in PB"),
+            new MenuOption("PB No Delay", "Remove hit cooldowns"),
+
+            // Movement
             new MenuOption("Speed Boost", "Boost movement speed"),
             new MenuOption("Fly", "Toggle flight mode"),
             new MenuOption("No Clip", "Disable collisions"),
@@ -32,19 +69,19 @@ namespace GTagSpeedMod
             new MenuOption("High Jump", "Jump higher"),
             new MenuOption("Low Gravity", "Reduce gravity"),
             new MenuOption("Wall Walk", "Stick to walls"),
-            new MenuOption("ESP", "Show player outlines"),
-            new MenuOption("Tag Aura", "Auto-tag nearby players"),
-            new MenuOption("Anti Tag", "Avoid getting tagged"),
-            new MenuOption("Platforms", "Spawn temporary platforms"),
-            new MenuOption("Chams", "Colorize player models"),
-            new MenuOption("Teleport", "Teleport to look position"),
-            new MenuOption("Speed Lines", "Visual speed effect"),
-            new MenuOption("Night Mode", "Darken scene lighting"),
-            new MenuOption("Name Spoof", "Spoof player name"),
-            new MenuOption("Random Colors", "Cycle player colors"),
             new MenuOption("Slow Fall", "Reduce fall speed"),
-            new MenuOption("Spin Bots", "Spin player model"),
-            new MenuOption("FOV Boost", "Increase camera field of view")
+            new MenuOption("Platforms", "Spawn platforms"),
+            new MenuOption("Teleport", "Teleport to look pos"),
+
+            // Visual
+            new MenuOption("ESP", "Show player outlines"),
+            new MenuOption("Chams", "Colorize players"),
+            new MenuOption("Speed Lines", "Visual speed effect"),
+            new MenuOption("Night Mode", "Darken lighting"),
+            new MenuOption("Random Colors", "Cycle colors"),
+            new MenuOption("FOV Boost", "Increase FOV"),
+            new MenuOption("Name Spoof", "Change display name"),
+            new MenuOption("Spin Bots", "Spin player model")
         };
 
         private float speedMultiplier = 2.0f;
@@ -64,6 +101,13 @@ namespace GTagSpeedMod
         private Type inputPollerType;
         private object inputPollerInstance;
         private readonly HashSet<string> loggedMissingFeatures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Button edge detection - track previous state to detect button presses
+        private bool prevRightPrimary;
+        private bool prevRightSecondary;
+        private bool prevLeftPrimary;
+        private bool prevLeftSecondary;
+        private bool hasLoggedInputPollerMembers;
         private int activeOptionIndex = -1;
         private float originalFov = -1f;
         private Color? originalAmbientLight;
@@ -72,7 +116,9 @@ namespace GTagSpeedMod
         private float originalFogDensity;
         private bool hasLoggedOnGUI;
         private bool hasLoggedHandMenuAttempt;
-        
+        private bool hasLoggedUpdate;
+        private float lastInputDebugTime;
+
         // This runs when your mod loads
         void Awake()
         {
@@ -93,12 +139,16 @@ namespace GTagSpeedMod
                 Logger.LogInfo("Hand menu will not be available until hand anchor is found");
             }
 
-            Logger.LogInfo("Building menu styles...");
-            BuildMenuStyles();
+            // Create pink texture early (doesn't require OnGUI context)
+            pinkTexture = new Texture2D(1, 1);
+            pinkTexture.SetPixel(0, 0, new Color(1f, 0.2f, 0.6f, 0.9f));
+            pinkTexture.Apply();
 
             Logger.LogInfo("========================================");
             Logger.LogInfo("GTag Mod Menu loaded successfully!");
-            Logger.LogInfo("Press F1, Y, or B to toggle menu");
+            Logger.LogInfo("Press Y or B button on VR controller to toggle menu");
+            Logger.LogInfo("(Keyboard input not available - Gorilla Tag uses new Input System)");
+            Logger.LogInfo("Menu styles will be built on first OnGUI call");
             Logger.LogInfo("========================================");
 
             // Log initial state
@@ -108,12 +158,26 @@ namespace GTagSpeedMod
         // This runs every frame
         void Update()
         {
+            // Log once that Update is being called
+            if (!hasLoggedUpdate)
+            {
+                Logger.LogInfo("[Update] Update() is being called - mod is active");
+                hasLoggedUpdate = true;
+            }
+
             // Press Y/B (or F1 as fallback) to toggle the menu
             if (IsMenuTogglePressed())
             {
                 showMenu = !showMenu;
                 Logger.LogInfo($"Menu toggled: {showMenu}");
                 LogDebugState("Menu toggle pressed");
+            }
+
+            // Debug: Log input state every 5 seconds to help troubleshoot
+            if (Time.time >= lastInputDebugTime + 5f)
+            {
+                DebugInputState();
+                lastInputDebugTime = Time.time;
             }
 
             if (handAnchor == null && Time.time >= nextHandSearchTime)
@@ -248,73 +312,113 @@ namespace GTagSpeedMod
         {
             Logger.LogInfo("[HandAnchor] Attempting to find hand anchor...");
 
+            // Method 1: Try GorillaTagger reflection first (most reliable)
             if (TryFindHandFromGorillaTagger())
             {
-                Logger.LogInfo("[HandAnchor] Found via GorillaTagger reflection");
+                Logger.LogInfo($"[HandAnchor] Found via GorillaTagger reflection: {handAnchor.name}");
                 return;
             }
 
-            var rightHand = GameObject.Find("RightHand Controller");
-            if (rightHand != null)
-            {
-                handAnchor = rightHand.transform;
-                Logger.LogInfo("[HandAnchor] Found 'RightHand Controller'");
-                return;
-            }
+            // Method 2: Search for common VR hand object names
+            string[] handNames = {
+                "RightHandTriggerCollider",  // Most common for Gorilla Tag
+                "LeftHandTriggerCollider",
+                "RightHand",
+                "LeftHand",
+                "RightHandAnchor",
+                "LeftHandAnchor",
+                "RightHandTransform",
+                "LeftHandTransform",
+                "RightHand Controller",
+                "LeftHand Controller",
+                "Player RightHand",
+                "Player LeftHand"
+            };
 
-            var rightHandAnchor = GameObject.Find("RightHandAnchor");
-            if (rightHandAnchor != null)
+            foreach (var handName in handNames)
             {
-                handAnchor = rightHandAnchor.transform;
-                Logger.LogInfo("[HandAnchor] Found 'RightHandAnchor'");
-                return;
-            }
-
-            var rightHandTransform = GameObject.Find("RightHand");
-            if (rightHandTransform != null)
-            {
-                handAnchor = rightHandTransform.transform;
-                Logger.LogInfo("[HandAnchor] Found 'RightHand'");
-                return;
-            }
-
-            var rightHandNode = GameObject.Find("PlayerRightHand");
-            if (rightHandNode != null)
-            {
-                handAnchor = rightHandNode.transform;
-                Logger.LogInfo("[HandAnchor] Found 'PlayerRightHand'");
-                return;
-            }
-
-            Logger.LogInfo("[HandAnchor] Named objects not found, searching all transforms...");
-#pragma warning disable CS0618
-            var transforms = GameObject.FindObjectsOfType<Transform>();
-#pragma warning restore CS0618
-            Logger.LogInfo($"[HandAnchor] Found {transforms.Length} total transforms in scene");
-
-            foreach (var transform in transforms)
-            {
-                if (transform == null)
+                var foundObject = GameObject.Find(handName);
+                if (foundObject != null)
                 {
-                    continue;
-                }
-
-                var name = transform.name;
-                if (string.IsNullOrEmpty(name))
-                {
-                    continue;
-                }
-
-                if (name.IndexOf("right", StringComparison.OrdinalIgnoreCase) >= 0
-                    && name.IndexOf("hand", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    handAnchor = transform;
-                    Logger.LogInfo($"[HandAnchor] Found via fallback search: {name}");
+                    handAnchor = foundObject.transform;
+                    Logger.LogInfo($"[HandAnchor] Found by name: '{handName}'");
                     return;
                 }
             }
 
-            Logger.LogWarning("[HandAnchor] No hand anchor found after searching all methods");
+            // Method 3: Search all transforms for hand-related objects
+            Logger.LogInfo("[HandAnchor] Named search failed, searching all transforms...");
+            Transform[] transforms = null;
+
+            try
+            {
+                transforms = GameObject.FindObjectsOfType<Transform>();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[HandAnchor] Error finding transforms: {ex.Message}");
+                return;
+            }
+
+            if (transforms == null || transforms.Length == 0)
+            {
+                Logger.LogWarning($"[HandAnchor] FindObjectsOfType returned {(transforms == null ? "null" : "0")} transforms");
+                Logger.LogInfo("[HandAnchor] Game may not be fully loaded yet - will retry in 2 seconds");
+                return;
+            }
+
+            Logger.LogInfo($"[HandAnchor] Searching through {transforms.Length} transforms...");
+
+            // Priority 1: Look for TriggerCollider objects (best for hand menus)
+            foreach (var transform in transforms)
+            {
+                if (transform == null || string.IsNullOrEmpty(transform.name))
+                    continue;
+
+                var nameLower = transform.name.ToLower();
+
+                if (nameLower.Contains("trigger") && nameLower.Contains("collider") && nameLower.Contains("right"))
+                {
+                    handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found TriggerCollider (priority): {transform.name}");
+                    return;
+                }
+            }
+
+            // Priority 2: Look for any right hand object
+            foreach (var transform in transforms)
+            {
+                if (transform == null || string.IsNullOrEmpty(transform.name))
+                    continue;
+
+                var nameLower = transform.name.ToLower();
+
+                if (nameLower.Contains("right") && (nameLower.Contains("hand") || nameLower.Contains("controller")))
+                {
+                    handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found right hand object: {transform.name}");
+                    return;
+                }
+            }
+
+            // Priority 3: Fallback to left hand
+            foreach (var transform in transforms)
+            {
+                if (transform == null || string.IsNullOrEmpty(transform.name))
+                    continue;
+
+                var nameLower = transform.name.ToLower();
+
+                if (nameLower.Contains("left") && (nameLower.Contains("hand") || nameLower.Contains("controller")))
+                {
+                    handAnchor = transform;
+                    Logger.LogInfo($"[HandAnchor] Found left hand object (fallback): {transform.name}");
+                    return;
+                }
+            }
+
+            Logger.LogWarning("[HandAnchor] No hand anchor found - will retry in 2 seconds");
+            Logger.LogInfo("[HandAnchor] Menu will appear in top-left corner until hand anchor is found");
         }
 
         private bool TryFindHandFromGorillaTagger()
@@ -367,20 +471,155 @@ namespace GTagSpeedMod
 
             switch (option.Name)
             {
+                // Tag Features
+                case "Tag Self":
+                    Advantages.TagSelf();
+                    break;
+                case "Untag Self":
+                    Advantages.UntagSelf();
+                    break;
+                case "Anti Tag":
+                    Advantages.AntiTag();
+                    break;
+                case "Tag All":
+                    Advantages.TagAll();
+                    break;
+                case "Untag All":
+                    Advantages.UntagAll();
+                    break;
+                case "Tag Aura":
+                    Advantages.TagAura();
+                    break;
+                case "Tag Reach":
+                    Advantages.TagReach();
+                    break;
+                case "Tag Gun":
+                    Advantages.TagGun();
+                    break;
+                case "Tag Bot":
+                    Advantages.TagBot();
+                    break;
+                case "Instant Tag Gun":
+                    Advantages.InstantTagGun();
+                    break;
+
+                // Advanced Tag
+                case "Spam Tag Self":
+                    Advantages.SpamTagSelf();
+                    break;
+                case "Spam Tag Gun":
+                    Advantages.SpamTagGun();
+                    break;
+                case "Spam Tag All":
+                    Advantages.SpamTagAll();
+                    break;
+                case "Tag Lag Gun":
+                    Advantages.TagLagGun();
+                    break;
+                case "Give Tag Lag Gun":
+                    Advantages.GiveTagLagGun();
+                    break;
+                case "Untag Gun":
+                    Advantages.UntagGun();
+                    break;
+                case "Flick Tag Gun":
+                    Advantages.FlickTagGun();
+                    break;
+                case "Report Anti Tag":
+                    Advantages.ReportAntiTag();
+                    break;
+
+                // Paintbrawl
+                case "PB Start Game":
+                    Advantages.PaintbrawlStartGame();
+                    break;
+                case "PB End Game":
+                    Advantages.PaintbrawlEndGame();
+                    break;
+                case "PB Restart Game":
+                    Advantages.PaintbrawlRestartGame();
+                    break;
+                case "PB Balloon Spam":
+                    Advantages.PaintbrawlBalloonSpam();
+                    break;
+                case "PB Kill Gun":
+                    Advantages.PaintbrawlKillGun();
+                    break;
+                case "PB Kill Self":
+                    Advantages.PaintbrawlKillSelf();
+                    break;
+                case "PB Kill All":
+                    Advantages.PaintbrawlKillAll();
+                    break;
+                case "PB Revive Gun":
+                    Advantages.PaintbrawlReviveGun();
+                    break;
+                case "PB Revive All":
+                    Advantages.PaintbrawlReviveAll();
+                    break;
+                case "PB God Mode":
+                    Advantages.PaintbrawlGodMode();
+                    break;
+                case "PB No Delay":
+                    Advantages.PaintbrawlNoDelay();
+                    break;
+
+                // Movement
                 case "Speed Boost":
-                    ApplySpeedBoost();
+                    Movement.SpeedBoost(speedMultiplier);
                     break;
-                case "FOV Boost":
-                    ApplyFovBoost();
+                case "Fly":
+                    Movement.Fly();
                     break;
-                case "Night Mode":
-                    ApplyNightMode();
+                case "No Clip":
+                    Movement.NoClip();
+                    break;
+                case "Long Arms":
+                    Movement.LongArms(2.0f);
+                    break;
+                case "High Jump":
+                    Movement.HighJump(2.0f);
                     break;
                 case "Low Gravity":
-                    ApplyLowGravity();
+                    Movement.LowGravity(0.5f);
+                    break;
+                case "Wall Walk":
+                    Movement.WallWalk();
                     break;
                 case "Slow Fall":
-                    ApplySlowFall();
+                    Movement.SlowFall(0.5f);
+                    break;
+                case "Platforms":
+                    Movement.Platforms();
+                    break;
+                case "Teleport":
+                    Movement.Teleport();
+                    break;
+
+                // Visual
+                case "ESP":
+                    Movement.ESP();
+                    break;
+                case "Chams":
+                    Movement.Chams();
+                    break;
+                case "Speed Lines":
+                    Movement.SpeedLines();
+                    break;
+                case "Night Mode":
+                    Movement.NightMode();
+                    break;
+                case "Random Colors":
+                    Movement.RandomColors();
+                    break;
+                case "FOV Boost":
+                    Movement.FOVBoost(90f);
+                    break;
+                case "Name Spoof":
+                    Movement.NameSpoof("YourNameHere");
+                    break;
+                case "Spin Bots":
+                    Movement.SpinBot(360f);
                     break;
                 default:
                     LogMissingFeature(option.Name);
@@ -531,25 +770,34 @@ namespace GTagSpeedMod
             Logger.LogInfo($"[Debug] =====================================");
         }
 
-        private bool IsMenuTogglePressed()
+        private void DebugInputState()
         {
-            if (Input.GetKeyDown(KeyCode.F1)
-                || Input.GetKeyDown(KeyCode.Y)
-                || Input.GetKeyDown(KeyCode.B)
-                || Input.GetKeyDown(KeyCode.JoystickButton3)
-                || Input.GetKeyDown(KeyCode.JoystickButton1)
-                || Input.GetKeyDown(KeyCode.JoystickButton2)
-                || Input.GetKeyDown(KeyCode.JoystickButton0)
-                || Input.GetKeyDown(KeyCode.JoystickButton4)
-                || Input.GetKeyDown(KeyCode.JoystickButton5)
-                || Input.GetKeyDown(KeyCode.JoystickButton6)
-                || Input.GetKeyDown(KeyCode.JoystickButton7)
-                || Input.GetKeyDown(KeyCode.JoystickButton8)
-                || Input.GetKeyDown(KeyCode.JoystickButton9))
+            Logger.LogInfo("[Input] === Input Debug ===");
+
+            if (inputPollerType != null && inputPollerInstance != null)
             {
-                return true;
+                Logger.LogInfo($"[Input] InputPoller found: {inputPollerType.Name}");
+                Logger.LogInfo($"[Input]   rightControllerPrimaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")}");
+                Logger.LogInfo($"[Input]   rightControllerSecondaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")}");
+                Logger.LogInfo($"[Input]   leftControllerPrimaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")}");
+                Logger.LogInfo($"[Input]   leftControllerSecondaryButton: {GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton")}");
+            }
+            else
+            {
+                Logger.LogInfo("[Input] InputPoller NOT found - searching for ControllerInputPoller");
+                Logger.LogInfo("[Input] NOTE: Gorilla Tag uses new Unity Input System - legacy Input API not available");
             }
 
+            Logger.LogInfo($"[Input] Current menu state: {(showMenu ? "VISIBLE" : "HIDDEN")}");
+            Logger.LogInfo("[Input] === Press Y or B button on controller to toggle menu ===");
+        }
+
+        private bool IsMenuTogglePressed()
+        {
+            // Gorilla Tag uses Unity's new Input System, so we can't use Input.GetKeyDown()
+            // We must use ControllerInputPoller instead
+
+            // Refresh InputPoller cache periodically
             if (Time.time >= nextInputPollerRefreshTime)
             {
                 CacheInputPoller();
@@ -561,26 +809,116 @@ namespace GTagSpeedMod
                 return false;
             }
 
-            return GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButtonDown")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton")
-                || GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton");
+            // Get current button states
+            bool currRightPrimary = GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerPrimaryButton");
+            bool currRightSecondary = GetBoolMember(inputPollerType, inputPollerInstance, "rightControllerSecondaryButton");
+            bool currLeftPrimary = GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerPrimaryButton");
+            bool currLeftSecondary = GetBoolMember(inputPollerType, inputPollerInstance, "leftControllerSecondaryButton");
+
+            // Detect rising edge (button was just pressed)
+            bool rightPrimaryPressed = currRightPrimary && !prevRightPrimary;
+            bool rightSecondaryPressed = currRightSecondary && !prevRightSecondary;
+            bool leftPrimaryPressed = currLeftPrimary && !prevLeftPrimary;
+            bool leftSecondaryPressed = currLeftSecondary && !prevLeftSecondary;
+
+            // Update previous states for next frame
+            prevRightPrimary = currRightPrimary;
+            prevRightSecondary = currRightSecondary;
+            prevLeftPrimary = currLeftPrimary;
+            prevLeftSecondary = currLeftSecondary;
+
+            // Check if any button was pressed this frame
+            if (rightPrimaryPressed)
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Right Controller Primary Button (Y)");
+                return true;
+            }
+
+            if (rightSecondaryPressed)
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Right Controller Secondary Button (B)");
+                return true;
+            }
+
+            if (leftPrimaryPressed)
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Left Controller Primary Button (X)");
+                return true;
+            }
+
+            if (leftSecondaryPressed)
+            {
+                Logger.LogInfo("[Input] Menu toggle detected: Left Controller Secondary Button (A)");
+                return true;
+            }
+
+            return false;
         }
 
         private void CacheInputPoller()
         {
+            if (inputPollerType != null && inputPollerInstance != null)
+            {
+                // Already cached and working
+                return;
+            }
+
             inputPollerType = FindTypeByName("ControllerInputPoller");
             if (inputPollerType == null)
             {
+                Logger.LogInfo("[Input] ControllerInputPoller type not found - input may not be ready yet");
                 inputPollerInstance = null;
                 return;
             }
 
             inputPollerInstance = GetInstanceFromType(inputPollerType);
+            if (inputPollerInstance == null)
+            {
+                Logger.LogInfo("[Input] ControllerInputPoller found but instance is null - waiting for initialization");
+            }
+            else
+            {
+                Logger.LogInfo("[Input] ControllerInputPoller successfully cached - controller input ready!");
+
+                // Log available members once for debugging
+                if (!hasLoggedInputPollerMembers)
+                {
+                    LogInputPollerMembers();
+                    hasLoggedInputPollerMembers = true;
+                }
+            }
+        }
+
+        private void LogInputPollerMembers()
+        {
+            if (inputPollerType == null)
+            {
+                return;
+            }
+
+            Logger.LogInfo("[Input] === Available ControllerInputPoller members ===");
+
+            var properties = inputPollerType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            Logger.LogInfo($"[Input] Properties ({properties.Length}):");
+            foreach (var prop in properties)
+            {
+                if (prop.PropertyType == typeof(bool))
+                {
+                    Logger.LogInfo($"[Input]   - {prop.Name} (bool)");
+                }
+            }
+
+            var fields = inputPollerType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            Logger.LogInfo($"[Input] Fields ({fields.Length}):");
+            foreach (var field in fields)
+            {
+                if (field.FieldType == typeof(bool))
+                {
+                    Logger.LogInfo($"[Input]   - {field.Name} (bool)");
+                }
+            }
+
+            Logger.LogInfo("[Input] ==========================================");
         }
 
         private static Type FindTypeByName(string typeName)
@@ -731,8 +1069,12 @@ namespace GTagSpeedMod
 
         private void BuildMenuStyles()
         {
+            // Note: This must only be called from OnGUI() because it uses GUI.skin
+            Logger.LogInfo("[Styles] Building menu styles (called from OnGUI)");
+
             if (pinkTexture == null)
             {
+                // Fallback if texture wasn't created in Awake
                 pinkTexture = new Texture2D(1, 1);
                 pinkTexture.SetPixel(0, 0, new Color(1f, 0.2f, 0.6f, 0.9f));
                 pinkTexture.Apply();
@@ -755,6 +1097,8 @@ namespace GTagSpeedMod
             {
                 fontSize = 13
             };
+
+            Logger.LogInfo("[Styles] Menu styles built successfully");
         }
     }
 }

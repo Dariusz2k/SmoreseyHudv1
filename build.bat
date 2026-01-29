@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 title GTag Mod Menu
 color 0A
 
@@ -13,18 +14,20 @@ echo 2. Build/Compile Mod
 echo 3. Launch GTag Manager
 echo 4. Install/Update BepInEx Dependencies
 echo 5. Extract Unity DLLs from Gorilla Tag
-echo 6. Exit
+echo 6. Fix BepInEx Development DLLs
+echo 7. Exit
 echo.
 echo ========================================
 echo.
-set /p choice="Enter your choice (1-6): "
+set /p choice="Enter your choice (1-7): "
 
 if "%choice%"=="1" goto PULL_CODE
 if "%choice%"=="2" goto BUILD_MOD
 if "%choice%"=="3" goto LAUNCH_MANAGER
 if "%choice%"=="4" goto INSTALL_DEPS
 if "%choice%"=="5" goto EXTRACT_UNITY
-if "%choice%"=="6" goto EXIT_SCRIPT
+if "%choice%"=="6" goto FIX_BEPINEX_DEVDLLS
+if "%choice%"=="7" goto EXIT_SCRIPT
 echo Invalid choice! Please try again.
 timeout /t 2 >nul
 goto MENU
@@ -59,27 +62,33 @@ if not defined CURRENT_BRANCH (
     goto MENU
 )
 
-set "PULL_BRANCH="
-
-if exist "build.config" (
-    for /f "usebackq tokens=1,* delims==" %%a in ("build.config") do (
-        if /i "%%a"=="PULL_BRANCH" set "PULL_BRANCH=%%b"
-    )
-)
-
-if not defined PULL_BRANCH (
-    set "PULL_BRANCH=%CURRENT_BRANCH%"
-)
-
 echo Current branch: %CURRENT_BRANCH%
-echo Configured pull branch: %PULL_BRANCH%
+echo.
+echo Select update method:
+echo.
+echo 1. Normal Pull (merge with current branch)
+echo 2. Hard Reset (discard ALL local changes and overwrite)
+echo 3. Select Different Branch
+echo 4. Cancel
+echo.
+set /p PULL_CHOICE="Enter your choice (1-4): "
+
+if "%PULL_CHOICE%"=="1" goto NORMAL_PULL
+if "%PULL_CHOICE%"=="2" goto HARD_RESET
+if "%PULL_CHOICE%"=="3" goto SELECT_BRANCH
+if "%PULL_CHOICE%"=="4" goto MENU
+echo Invalid choice!
+timeout /t 2 >nul
+goto PULL_CODE
+
+:NORMAL_PULL
 echo.
 echo Fetching latest changes...
 git fetch origin
 
 echo.
-echo Pulling changes for branch: %PULL_BRANCH%
-git pull origin %PULL_BRANCH%
+echo Pulling changes for branch: %CURRENT_BRANCH%
+git pull origin %CURRENT_BRANCH%
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -95,6 +104,120 @@ if %ERRORLEVEL% EQU 0 (
     echo.
     echo ========================================
     echo Pull failed! Check errors above.
+    echo ========================================
+    echo.
+    pause
+    goto MENU
+)
+
+:HARD_RESET
+echo.
+echo WARNING: This will discard ALL local changes!
+echo Your working directory will be reset to match the remote branch.
+echo.
+set /p CONFIRM="Are you sure you want to continue? (Y/N): "
+
+if /i not "%CONFIRM%"=="Y" (
+    echo.
+    echo Operation cancelled.
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Fetching latest changes from origin...
+git fetch origin
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to fetch from remote!
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Discarding all local changes...
+git reset --hard origin/%CURRENT_BRANCH%
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to reset to remote branch!
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Cleaning untracked files...
+git clean -fd
+
+echo.
+echo ========================================
+echo Repository synced successfully!
+echo ========================================
+echo.
+echo Your working directory now matches: origin/%CURRENT_BRANCH%
+echo All local changes have been discarded.
+echo.
+echo Reloading build menu with latest changes...
+timeout /t 2 >nul
+call "%~f0"
+exit /b
+
+:SELECT_BRANCH
+echo.
+echo Fetching branch list...
+git fetch origin
+
+echo.
+echo Available remote branches:
+git branch -r
+
+echo.
+set /p NEW_BRANCH="Enter branch name (e.g., main, claude/branch-name): "
+
+if not defined NEW_BRANCH (
+    echo.
+    echo No branch specified.
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Checking out branch: %NEW_BRANCH%
+git checkout %NEW_BRANCH%
+
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to checkout branch!
+    echo.
+    pause
+    goto MENU
+)
+
+echo.
+echo Pulling latest changes...
+git pull origin %NEW_BRANCH%
+
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo ========================================
+    echo Branch switched successfully!
+    echo ========================================
+    echo.
+    echo You are now on: %NEW_BRANCH%
+    echo.
+    echo Reloading build menu with latest changes...
+    timeout /t 2 >nul
+    call "%~f0"
+    exit /b
+) else (
+    echo.
+    echo ========================================
+    echo Branch switch completed with warnings.
     echo ========================================
     echo.
     pause
@@ -298,6 +421,41 @@ if %ERRORLEVEL% EQU 0 (
     echo A detailed build log has been saved to: build.log
     echo This log contains diagnostic information to help troubleshoot the issue
     echo.
+
+    REM Check if the error is related to BaseUnityPlugin
+    findstr /C:"BaseUnityPlugin" build.log >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo.
+        echo ========================================
+        echo DETECTED: BepInEx.dll Issue
+        echo ========================================
+        echo.
+        echo The build failed because BepInEx.BaseUnityPlugin could not be found.
+        echo This usually means you have the RUNTIME version of BepInEx.dll
+        echo instead of the DEVELOPMENT version needed for compilation.
+        echo.
+        echo Would you like to automatically download the correct BepInEx DLLs?
+        echo.
+        set /p FIX_BEPINEX="Download and install BepInEx dev DLLs? (Y/N): "
+
+        if /i "%FIX_BEPINEX%"=="Y" (
+            echo.
+            echo Running BepInEx development DLL installer...
+            echo.
+            powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
+
+            if %ERRORLEVEL% EQU 0 (
+                echo.
+                echo BepInEx development DLLs installed successfully!
+                echo.
+                set /p RETRY_BUILD="Try building again? (Y/N): "
+                if /i "!RETRY_BUILD!"=="Y" (
+                    goto BUILD_MOD
+                )
+            )
+        )
+    )
+    echo.
 )
 pause
 goto MENU
@@ -421,7 +579,63 @@ timeout /t 2 >nul
 goto MENU
 
 REM ========================================
-REM OPTION 6: Exit
+REM OPTION 6: Fix BepInEx Development DLLs
+REM ========================================
+:FIX_BEPINEX_DEVDLLS
+cls
+echo ========================================
+echo Fix BepInEx Development DLLs
+echo ========================================
+echo.
+
+if not exist "fix-bepinex-dev-dlls.ps1" (
+    echo ERROR: fix-bepinex-dev-dlls.ps1 not found!
+    echo Expected location: %CD%\fix-bepinex-dev-dlls.ps1
+    echo.
+    pause
+    goto MENU
+)
+
+echo This will download and install BepInEx 5.4.x DEVELOPMENT DLLs.
+echo These are required for compiling mods, not for running the game.
+echo.
+echo The following DLLs will be downloaded and installed to libs folder:
+echo   - BepInEx.dll (development version)
+echo   - 0Harmony.dll
+echo   - Mono.Cecil.dll
+echo   - MonoMod.RuntimeDetour.dll
+echo   - MonoMod.Utils.dll
+echo.
+echo Existing files will be overwritten.
+echo.
+echo Press any key to continue or Ctrl+C to cancel...
+pause >nul
+
+echo.
+echo Running BepInEx development DLL installer...
+echo.
+powershell.exe -ExecutionPolicy Bypass -File "%CD%\fix-bepinex-dev-dlls.ps1"
+
+if %ERRORLEVEL% EQU 0 (
+    echo.
+    echo ========================================
+    echo Installation completed successfully!
+    echo ========================================
+    echo.
+) else (
+    echo.
+    echo ========================================
+    echo Installation failed or was cancelled.
+    echo ========================================
+    echo.
+)
+
+echo Returning to menu...
+timeout /t 3 >nul
+goto MENU
+
+REM ========================================
+REM OPTION 7: Exit
 REM ========================================
 :EXIT_SCRIPT
 cls
